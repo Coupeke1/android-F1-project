@@ -1,0 +1,147 @@
+{
+    "teams": [
+      {
+        "id": 1,
+        "name": "Red Bull Racing",
+        "founded": "2005-11-15",
+        "championshipsWon": 6,
+        "isActive": true,
+        "engineSupplier": "Honda",
+        "logoUrl": "https://upload.wikimedia.org/wikipedia/en/thumb/d/d3/Red_Bull_Racing_logo.svg/1200px-Red_Bull_Racing_logo.svg.png",
+        "sponsors": ["Oracle", "Bybit", "Mobil 1"],
+        "headquarters": "Milton Keynes, UK",
+        "teamPrincipal": "Christian Horner",
+        "budgetInMillion": 400.5
+      },
+      {
+        "id": 2,
+        "name": "Mercedes-AMG Petronas",
+        "founded": "2010-11-04",
+        "championshipsWon": 8,
+        "isActive": true,
+        "engineSupplier": "Mercedes",
+        "logoUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/3/3d/Mercedes-Benz_AMG_Petronas_F1_Logo.svg/1200px-Mercedes-Benz_AMG_Petronas_F1_Logo.svg.png",
+        "sponsors": ["Petronas", "INEOS", "CrowdStrike"],
+        "headquarters": "Brackley, UK",
+        "teamPrincipal": "Toto Wolff",
+        "budgetInMillion": 450.2
+      },
+      {
+        "id": 3,
+        "name": "Scuderia Ferrari",
+        "founded": "1950-05-15",
+        "championshipsWon": 16,
+        "isActive": true,
+        "engineSupplier": "Ferrari",
+        "logoUrl": "https://upload.wikimedia.org/wikipedia/en/thumb/d/d2/Scuderia_Ferrari_Logo.svg/800px-Scuderia_Ferrari_Logo.svg.png",
+        "sponsors": ["Shell", "Santander", "Ray-Ban"],
+        "headquarters": "Maranello, Italy",
+        "teamPrincipal": "Frédéric Vasseur",
+        "budgetInMillion": 430.8
+      },
+      {
+        "id": 4,
+        "name": "McLaren F1 Team",
+        "founded": "1963-09-02",
+        "championshipsWon": 8,
+        "isActive": true,
+        "engineSupplier": "Mercedes",
+        "logoUrl": "https://upload.wikimedia.org/wikipedia/en/thumb/7/75/McLaren_Racing_logo.svg/1200px-McLaren_Racing_logo.svg.png",
+        "sponsors": ["Google", "Dell", "Gulf"],
+        "headquarters": "Woking, UK",
+        "teamPrincipal": "Andrea Stella",
+        "budgetInMillion": 380.6
+      }
+    ],
+    "drivers": [
+      {
+        "id": 1,
+        "name": "Max Verstappen",
+        "birthdate": "1997-09-30",
+        "teamId": 1,
+        "racesWon": 55,
+        "isWorldChampion": true,
+        "nationality": "Dutch",
+        "podiums": 95,
+        "contractUntil": 2028
+      },
+      {
+        "id": 2,
+        "name": "Sergio Perez",
+        "birthdate": "1990-01-26",
+        "teamId": 1,
+        "racesWon": 6,
+        "isWorldChampion": false,
+        "nationality": "Mexican",
+        "podiums": 33,
+        "contractUntil": 2024
+      },
+      {
+        "id": 3,
+        "name": "Lewis Hamilton",
+        "birthdate": "1985-01-07",
+        "teamId": 2,
+        "racesWon": 103,
+        "isWorldChampion": true,
+        "nationality": "British",
+        "podiums": 195,
+        "contractUntil": 2025
+      },
+      {
+        "id": 4,
+        "name": "George Russell",
+        "birthdate": "1998-02-15",
+        "teamId": 2,
+        "racesWon": 1,
+        "isWorldChampion": false,
+        "nationality": "British",
+        "podiums": 10,
+        "contractUntil": 2025
+      },
+      {
+        "id": 5,
+        "name": "Charles Leclerc",
+        "birthdate": "1997-10-16",
+        "teamId": 3,
+        "racesWon": 5,
+        "isWorldChampion": false,
+        "nationality": "Monegasque",
+        "podiums": 26,
+        "contractUntil": 2024
+      },
+      {
+        "id": 6,
+        "name": "Carlos Sainz",
+        "birthdate": "1994-09-01",
+        "teamId": 3,
+        "racesWon": 2,
+        "isWorldChampion": false,
+        "nationality": "Spanish",
+        "podiums": 18,
+        "contractUntil": 2024
+      },
+      {
+        "id": 7,
+        "name": "Lando Norris",
+        "birthdate": "1999-11-13",
+        "teamId": 4,
+        "racesWon": 0,
+        "isWorldChampion": false,
+        "nationality": "British",
+        "podiums": 13,
+        "contractUntil": 2025
+      },
+      {
+        "id": 8,
+        "name": "Oscar Piastri",
+        "birthdate": "2001-04-06",
+        "teamId": 4,
+        "racesWon": 0,
+        "isWorldChampion": false,
+        "nationality": "Australian",
+        "podiums": 2,
+        "contractUntil": 2026
+      }
+    ]
+  }
+  
