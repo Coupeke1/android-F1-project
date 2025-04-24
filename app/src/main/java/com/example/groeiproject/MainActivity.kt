@@ -28,6 +28,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -39,11 +40,9 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.groeiproject.model.Team
-
 import com.example.groeiproject.ui.theme.PurpleTheme
 import countDriversForTeam
 import getAllTeams
@@ -63,18 +62,16 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun TeamViewer() {
     var currentIndex by remember { mutableIntStateOf(0) }
-    var refreshTrigger by remember { mutableIntStateOf(0) }
-    val teams = remember(refreshTrigger) { getAllTeams() }
+    val teamList = remember { mutableStateListOf<Team>().apply { addAll(getAllTeams()) } }
 
-    if (teams.isEmpty()) {
+    if (teamList.isEmpty()) {
         Text("Geen teams beschikbaar")
         return
     }
 
-    val safeIndex = currentIndex.coerceIn(0, teams.lastIndex)
-    val currentTeam = teams[safeIndex]
-    val driverCount =
-        remember(currentTeam.id, refreshTrigger) { countDriversForTeam(currentTeam.id) }
+    val safeIndex = currentIndex.coerceIn(0, teamList.lastIndex)
+    val currentTeam = teamList[safeIndex]
+    val driverCount = remember(currentTeam.id) { countDriversForTeam(currentTeam.id) }
 
     var showEditDialog by remember { mutableStateOf(false) }
 
@@ -82,7 +79,7 @@ fun TeamViewer() {
         team = currentTeam,
         driverCount = driverCount,
         onPrevious = { if (currentIndex > 0) currentIndex-- },
-        onNext = { if (currentIndex < teams.size - 1) currentIndex++ },
+        onNext = { if (currentIndex < teamList.size - 1) currentIndex++ },
         onEdit = { showEditDialog = true }
     )
 
@@ -90,13 +87,25 @@ fun TeamViewer() {
         EditTeamDialog(
             team = currentTeam,
             onDismiss = { showEditDialog = false },
-            onSave = {
+            onSave = { updatedTeam ->
+                val index = teamList.indexOfFirst { it.id == updatedTeam.id }
+                if (index != -1) {
+                    teamList[index] = updatedTeam
+                    updateTeam(
+                        updatedTeam.id,
+                        updatedTeam.name,
+                        updatedTeam.headquarters,
+                        updatedTeam.teamPrincipal,
+                        updatedTeam.championships,
+                        updatedTeam.active
+                    )
+                }
                 showEditDialog = false
-                refreshTrigger++
             }
         )
     }
 }
+
 
 @Composable
 fun ArtworkDisplay(
@@ -115,24 +124,17 @@ fun ArtworkDisplay(
         verticalArrangement = Arrangement.Center
     ) {
         Spacer(modifier = Modifier.height(24.dp))
-
         TeamLogo(team.logoUrl)
-
         Spacer(modifier = Modifier.height(40.dp))
-
         Text(
             text = team.name,
             style = MaterialTheme.typography.headlineMedium,
             fontWeight = FontWeight.Bold,
             color = MaterialTheme.colorScheme.onBackground
         )
-
         Spacer(modifier = Modifier.height(16.dp))
-
         TeamInfoCard(team, driverCount)
-
         Spacer(modifier = Modifier.height(28.dp))
-
         Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
             PurpleButton("Vorige", onClick = onPrevious)
             PurpleButton("Bewerken", onClick = onEdit)
@@ -147,9 +149,7 @@ fun TeamLogo(logoUrl: String) {
     val resId = remember(logoUrl) {
         context.resources.getIdentifier(logoUrl, "drawable", context.packageName)
     }
-
     val actualResId = if (resId != 0) resId else R.drawable.ic_launcher_background
-
     Image(
         painter = painterResource(id = actualResId),
         contentDescription = "Team logo",
@@ -189,16 +189,8 @@ fun InfoRow(label: String, value: String) {
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
-        Text(
-            text = label,
-            fontSize = 16.sp,
-            color = Color.Gray
-        )
-        Text(
-            text = value,
-            fontSize = 16.sp,
-            fontWeight = FontWeight.Medium
-        )
+        Text(text = label, fontSize = 16.sp, color = Color.Gray)
+        Text(text = value, fontSize = 16.sp, fontWeight = FontWeight.Medium)
     }
 }
 
@@ -220,7 +212,7 @@ fun PurpleButton(text: String, onClick: () -> Unit) {
 fun EditTeamDialog(
     team: Team,
     onDismiss: () -> Unit,
-    onSave: () -> Unit
+    onSave: (Team) -> Unit
 ) {
     var teamName by remember { mutableStateOf(team.name) }
     var teamHQ by remember { mutableStateOf(team.headquarters) }
@@ -244,21 +236,18 @@ fun EditTeamDialog(
                     label = { Text("Teamnaam") },
                     modifier = Modifier.fillMaxWidth()
                 )
-
                 OutlinedTextField(
                     value = teamHQ,
                     onValueChange = { teamHQ = it },
                     label = { Text("Hoofdkwartier") },
                     modifier = Modifier.fillMaxWidth()
                 )
-
                 OutlinedTextField(
                     value = teamPrincipal,
                     onValueChange = { teamPrincipal = it },
                     label = { Text("Teambaas") },
                     modifier = Modifier.fillMaxWidth()
                 )
-
                 OutlinedTextField(
                     value = championships,
                     onValueChange = { championships = it },
@@ -266,7 +255,6 @@ fun EditTeamDialog(
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                     modifier = Modifier.fillMaxWidth()
                 )
-
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     verticalAlignment = Alignment.CenterVertically
@@ -280,19 +268,16 @@ fun EditTeamDialog(
             }
         },
         confirmButton = {
-            Button(
-                onClick = {
-                    updateTeam(
-                        teamId = team.id,
-                        newName = teamName,
-                        newHeadquarters = teamHQ,
-                        newTeamPrincipal = teamPrincipal,
-                        newChampionships = championships.toIntOrNull() ?: team.championships,
-                        newActive = isActive
-                    )
-                    onSave()
-                }
-            ) {
+            Button(onClick = {
+                val updatedTeam = team.copy(
+                    name = teamName,
+                    headquarters = teamHQ,
+                    teamPrincipal = teamPrincipal,
+                    championships = championships.toIntOrNull() ?: team.championships,
+                    active = isActive
+                )
+                onSave(updatedTeam)
+            }) {
                 Text("Opslaan")
             }
         },
@@ -302,12 +287,4 @@ fun EditTeamDialog(
             }
         }
     )
-}
-
-@Preview(showBackground = true)
-@Composable
-fun TeamViewerPreview() {
-    PurpleTheme {
-        TeamViewer()
-    }
 }
