@@ -5,24 +5,28 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -34,18 +38,24 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.graphics.toColorInt
+import com.example.groeiproject.components.PurpleButton
+import com.example.groeiproject.model.Driver
 import com.example.groeiproject.model.Team
 import com.example.groeiproject.ui.theme.PurpleTheme
 import countDriversForTeam
 import getAllTeams
+import getDriversForTeam
 import updateTeam
 
 class MainActivity : ComponentActivity() {
@@ -72,12 +82,14 @@ fun TeamViewer() {
     val safeIndex = currentIndex.coerceIn(0, teamList.lastIndex)
     val currentTeam = teamList[safeIndex]
     val driverCount = remember(currentTeam.id) { countDriversForTeam(currentTeam.id) }
+    val drivers = remember(currentTeam.id) { getDriversForTeam(currentTeam.id) }
 
     var showEditDialog by remember { mutableStateOf(false) }
 
     ArtworkDisplay(
         team = currentTeam,
         driverCount = driverCount,
+        drivers = drivers,
         onPrevious = { if (currentIndex > 0) currentIndex-- },
         onNext = { if (currentIndex < teamList.size - 1) currentIndex++ },
         onEdit = { showEditDialog = true }
@@ -106,11 +118,11 @@ fun TeamViewer() {
     }
 }
 
-
 @Composable
 fun ArtworkDisplay(
     team: Team,
     driverCount: Int,
+    drivers: List<Driver>,
     onPrevious: () -> Unit,
     onNext: () -> Unit,
     onEdit: () -> Unit
@@ -134,11 +146,130 @@ fun ArtworkDisplay(
         )
         Spacer(modifier = Modifier.height(16.dp))
         TeamInfoCard(team, driverCount)
+        Spacer(modifier = Modifier.height(16.dp))
+        DriversRow(drivers)
         Spacer(modifier = Modifier.height(28.dp))
         Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
             PurpleButton("Vorige", onClick = onPrevious)
             PurpleButton("Bewerken", onClick = onEdit)
             PurpleButton("Volgende", onClick = onNext)
+        }
+    }
+}
+
+@Composable
+fun DriversRow(drivers: List<Driver>) {
+    Column(modifier = Modifier.fillMaxWidth()) {
+        Text(
+            text = "Coureurs",
+            style = MaterialTheme.typography.titleMedium,
+            fontWeight = FontWeight.SemiBold,
+            modifier = Modifier.padding(start = 8.dp, bottom = 4.dp)
+        )
+        LazyRow(
+            modifier = Modifier
+                .fillMaxWidth(),
+            contentPadding = PaddingValues(horizontal = 0.dp),
+            horizontalArrangement = Arrangement.spacedBy(
+                18.dp,
+                Alignment.CenterHorizontally
+            )
+        ) {
+            items(drivers) { driver ->
+                DriverCard(driver)
+            }
+        }
+    }
+}
+
+@Composable
+fun DriverCard(driver: Driver) {
+    val borderColor = try {
+        Color(driver.helmetColor.toColorInt())
+    } catch (e: Exception) {
+        Color.Gray
+    }
+
+    Card(
+        modifier = Modifier
+            .width(160.dp)
+            .height(200.dp)
+            .border(
+                width = 2.dp,
+                color = borderColor,
+                shape = RoundedCornerShape(16.dp)
+            )
+            .clip(RoundedCornerShape(16.dp)),
+        elevation = CardDefaults.cardElevation(6.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(12.dp),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Text(
+                text = driver.fullName,
+                style = MaterialTheme.typography.bodyLarge,
+                fontWeight = FontWeight.SemiBold,
+                fontSize = 15.sp,
+                textAlign = TextAlign.Center,
+                maxLines = 2,
+                modifier = Modifier.fillMaxWidth()
+            )
+            Spacer(modifier = Modifier.height(4.dp))
+            Text(
+                text = "#${driver.raceNumber}",
+                style = MaterialTheme.typography.labelLarge,
+                textAlign = TextAlign.Center,
+                modifier = Modifier.fillMaxWidth()
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(
+                text = driver.nationality,
+                style = MaterialTheme.typography.bodyMedium,
+                textAlign = TextAlign.Center,
+                modifier = Modifier.fillMaxWidth()
+            )
+            Spacer(modifier = Modifier.height(4.dp))
+            Text(
+                text = driver.dateOfBirth,
+                style = MaterialTheme.typography.bodySmall,
+                textAlign = TextAlign.Center,
+                modifier = Modifier.fillMaxWidth()
+            )
+            Text(
+                text = "${driver.contractYears} jaar contract",
+                style = MaterialTheme.typography.bodySmall,
+                textAlign = TextAlign.Center,
+                modifier = Modifier.fillMaxWidth()
+            )
+            Spacer(modifier = Modifier.height(4.dp))
+            Text(
+                text = "${driver.podiumFinishes} podia",
+                style = MaterialTheme.typography.bodySmall,
+                textAlign = TextAlign.Center,
+                modifier = Modifier.fillMaxWidth()
+            )
+            if (driver.isRookie) {
+                Spacer(modifier = Modifier.height(6.dp))
+                Surface(
+                    shape = RoundedCornerShape(8.dp),
+                    tonalElevation = 2.dp,
+                    color = MaterialTheme.colorScheme.primaryContainer
+                ) {
+                    Text(
+                        text = "Nieuwkomer",
+                        style = MaterialTheme.typography.labelSmall,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onPrimaryContainer,
+                        modifier = Modifier
+                            .padding(horizontal = 8.dp, vertical = 4.dp)
+                    )
+                }
+            }
         }
     }
 }
@@ -194,19 +325,6 @@ fun InfoRow(label: String, value: String) {
     }
 }
 
-@Composable
-fun PurpleButton(text: String, onClick: () -> Unit) {
-    Button(
-        onClick = onClick,
-        shape = RoundedCornerShape(30),
-        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF512DA8)),
-        modifier = Modifier
-            .height(48.dp)
-            .widthIn(min = 100.dp)
-    ) {
-        Text(text = text, color = Color.White)
-    }
-}
 
 @Composable
 fun EditTeamDialog(
