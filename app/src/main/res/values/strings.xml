@@ -1,3 +1,38 @@
 <resources>
-    <string name="app_name">Groeiproject</string>
+    <!-- TeamViewer -->
+    <string name="no_teams_available">Geen teams beschikbaar</string>
+    <string name="button_previous">Vorige</string>
+    <string name="button_edit">Bewerken</string>
+    <string name="button_next">Volgende</string>
+
+    <!-- DriversRow -->
+    <string name="title_drivers">Coureurs</string>
+
+    <!-- EditTeamDialog -->
+    <string name="dialog_title_edit_team">Bewerk Team</string>
+    <string name="label_team_name">Teamnaam</string>
+    <string name="label_headquarters">Hoofdkwartier</string>
+    <string name="label_team_principal">Teambaas</string>
+    <string name="label_championships">Kampioenschappen</string>
+    <string name="label_active">Actief</string>
+    <string name="button_save">Opslaan</string>
+    <string name="button_cancel">Annuleren</string>
+
+    <!-- TeamInfoCard / InfoRow -->
+    <string name="info_hq">HQ</string>
+    <string name="info_engine">Motor</string>
+    <string name="info_championships">Kampioenschappen</string>
+    <string name="info_team_principal">Teambaas</string>
+    <string name="info_driver_count">Aantal coureurs</string>
+    <string name="info_active">Actief</string>
+    <string name="team_logo_description" translatable="false">Team logo</string>
+
+    <!-- DriverCard -->
+    <string name="badge_rookie">Nieuwkomer</string>
+    <string name="yes">Ja</string>
+    <string name="no">Nee</string>
+    <string name="no_drivers">Geen coureurs</string>
+    <string name="button_add">toevoegen</string>
+    <string name="button_delete">"verwijderen"</string>
+    <string name="dialog_title_add_team">team toevoegen</string>
 </resources>

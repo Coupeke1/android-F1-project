@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- TeamViewer -->
+    <string name="no_teams_available">No teams available</string>
+    <string name="button_previous">Previous</string>
+    <string name="button_edit">Edit</string>
+    <string name="button_next">Next</string>
+
+    <!-- DriversRow -->
+    <string name="title_drivers">Drivers</string>
+
+    <!-- EditTeamDialog -->
+    <string name="dialog_title_edit_team">Edit Team</string>
+    <string name="label_team_name">Team name</string>
+    <string name="label_headquarters">Headquarters</string>
+    <string name="label_team_principal">Team principal</string>
+    <string name="label_championships">Championships</string>
+    <string name="label_active">Active</string>
+    <string name="button_save">Save</string>
+    <string name="button_cancel">Cancel</string>
+
+    <!-- TeamInfoCard / InfoRow -->
+    <string name="info_hq">HQ</string>
+    <string name="info_engine">Engine</string>
+    <string name="info_championships">Championships</string>
+    <string name="info_team_principal">Team principal</string>
+    <string name="info_driver_count">Number of drivers</string>
+    <string name="info_active">Active</string>
+
+    <!-- DriverCard -->
+
+    <string name="badge_rookie">Rookie</string>
+    <string name="yes">Yes</string>
+    <string name="no">No</string>
+    <string name="no_drivers">No drivers</string>
+    <string name="button_add">add</string>
+    <string name="button_delete">delete</string>
+    <string name="dialog_title_add_team">add a team</string>
+</resources>

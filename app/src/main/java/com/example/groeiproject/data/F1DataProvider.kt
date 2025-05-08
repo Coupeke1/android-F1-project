@@ -4,7 +4,7 @@ import com.example.groeiproject.model.Driver
 import com.example.groeiproject.model.Team
 
 object F1DataProvider {
-    val teams = listOf(
+    val teams: MutableList<Team> = mutableListOf(
         Team(
             id = 1,
             name = "Mercedes-AMG Petronas",
@@ -188,11 +188,13 @@ object F1DataProvider {
         )
     )
     val drivers = listOf(
-        Driver(1, 1, "Lewis Hamilton", "British", 44, "1985-01-07", 2, 197, "Purple", false),
+        Driver(1, 1, "Lewis Hamilton", "British", 44, "1985-01-07", 3, 197, "Purple", false),
+        Driver(1, 1, "Kimi Antonelli", "Italian", 12, "2006-03-25", 1, 2, "white", true),
         Driver(2, 1, "George Russell", "British", 63, "1998-02-15", 3, 11, "Black", false),
         Driver(3, 2, "Charles Leclerc", "Monegasque", 16, "1997-10-16", 5, 31, "Red", false),
         Driver(4, 2, "Carlos Sainz Jr.", "Spanish", 55, "1994-09-01", 2, 21, "Yellow", false),
         Driver(5, 3, "Max Verstappen", "Dutch", 1, "1997-09-30", 6, 102, "Blue", false),
+        Driver(5, 3, "Yuki Tsunoda", "Japanese", 22, "1997-09-30", 2, 5, "Blue", true),
         Driver(6, 3, "Sergio Pérez", "Mexican", 11, "1990-01-26", 2, 39, "Pink", false),
         Driver(7, 4, "Lando Norris", "British", 4, "1999-11-13", 5, 15, "Orange", false),
         Driver(8, 4, "Oscar Piastri", "Australian", 81, "2001-04-06", 4, 3, "Cyan", true),

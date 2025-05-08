@@ -25,11 +25,16 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
@@ -93,99 +98,99 @@ fun TeamViewer(viewModel: TeamViewModel) {
     var showEdit by remember { mutableStateOf(false) }
     var showAdd by remember { mutableStateOf(false) }
 
-    Column(
+    Box(
         modifier = Modifier
             .fillMaxSize()
-            .verticalScroll(rememberScrollState())
-            .padding(10.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(14.dp)
+            .padding(10.dp)
     ) {
-//        Row(
-//            Modifier.fillMaxWidth(),
-//            horizontalArrangement = Arrangement.SpaceBetween
-//        )
-//        {
-//            PurpleButton(text = stringResource(R.string.button_add)) { showAdd = true }
-//            PurpleButton(text = stringResource(R.string.button_delete)) {
-//                if (teams.isNotEmpty()) {
-//                    viewModel.deleteTeam(teams[currentIndex].id)
-//                    currentIndex = (currentIndex - 1).coerceAtLeast(0)
-//                }
-//            }
-//        }
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+        ) {
+            if (teams.isEmpty()) {
+                Text(
+                    text = stringResource(R.string.no_teams_available),
+                    style = MaterialTheme.typography.bodyMedium,
+                    modifier = Modifier.fillMaxWidth(),
+                    textAlign = TextAlign.Center
+                )
+                Button(
+                    onClick = { showAdd = true },
+                    shape = RoundedCornerShape(12.dp),
+                    modifier = Modifier.padding(top = 16.dp)
+                ) {
+                    Spacer(Modifier.width(8.dp))
+                    Text(stringResource(R.string.button_add))
+                }
+            } else {
+                val idx = currentIndex.coerceIn(0, teams.lastIndex)
+                val team = teams[idx]
+                val drivers = remember(team.id) { getDriversForTeam(team.id) }
+                val count = remember(team.id) { countDriversForTeam(team.id) }
 
-        if (teams.isEmpty()) {
-            Text(
-                text = stringResource(R.string.no_teams_available),
-                style = MaterialTheme.typography.bodyMedium,
-                modifier = Modifier.fillMaxWidth(),
-                textAlign = TextAlign.Center
-            )
-        } else {
-            val idx = currentIndex.coerceIn(0, teams.lastIndex)
-            val team = teams[idx]
-            val drivers = remember(team.id) { getDriversForTeam(team.id) }
-            val count = remember(team.id) { countDriversForTeam(team.id) }
+                ArtworkDisplay(
+                    team = team,
+                    driverCount = count,
+                    drivers = drivers,
+                    onPrevious = { if (idx > 0) currentIndex-- },
+                    onNext = { if (idx < teams.lastIndex) currentIndex++ },
+                    onEdit = { showEdit = true },
+                    onDelete = {
+                        viewModel.deleteTeam(team.id)
+                        currentIndex = (currentIndex - 1).coerceAtLeast(0)
+                    },
+                    onAdd = { showAdd = true }
+                )
+            }
+        }
 
-            ArtworkDisplay(
+        if (showEdit) {
+            val team = teams.getOrNull(currentIndex) ?: return
+            EditTeamDialog(
                 team = team,
-                driverCount = count,
-                drivers = drivers,
-                onPrevious = { if (idx > 0) currentIndex-- },
-                onNext = { if (idx < teams.lastIndex) currentIndex++ },
-                onEdit = { showEdit = true }
+                onDismiss = { showEdit = false },
+                onSave = {
+                    viewModel.updateTeam(it)
+                    showEdit = false
+                }
+            )
+        }
+
+        if (showAdd) {
+            var name by remember { mutableStateOf("") }
+            var hq by remember { mutableStateOf("") }
+            var principal by remember { mutableStateOf("") }
+            var champs by remember { mutableIntStateOf(0) }
+            var active by remember { mutableStateOf(true) }
+            AddTeamDialog(
+                name, onNameChange = { name = it },
+                headquarters = hq, onHqChange = { hq = it },
+                teamPrincipal = principal, onPrincipalChange = { principal = it },
+                championships = champs, onChampsChange = { champs = it },
+                active = active, onActiveChange = { active = it },
+                onDismiss = { showAdd = false },
+                onSave = {
+                    val newId = (teams.maxOfOrNull { it.id } ?: 0) + 1
+                    val newTeam = Team(
+                        id = newId,
+                        name = name,
+                        foundedDate = "${'$'}{LocalDate.now()}",
+                        headquarters = hq,
+                        teamPrincipal = principal,
+                        engineManufacturer = "Unknown",
+                        championships = champs,
+                        active = active,
+                        enginePowerHP = 0.0,
+                        sponsors = emptyList(),
+                        logoUrl = "ic_launcher_background"
+                    )
+                    viewModel.createTeam(newTeam)
+                    currentIndex = viewModel.teams.value.lastIndex
+                    showAdd = false
+                }
             )
         }
     }
-
-    if (showEdit) {
-        val team = teams.getOrNull(currentIndex) ?: return
-        EditTeamDialog(
-            team = team,
-            onDismiss = { showEdit = false },
-            onSave = {
-                viewModel.updateTeam(it)
-                showEdit = false
-            }
-        )
-    }
-
-//    if (showAdd) {
-//        var name by remember { mutableStateOf("") }
-//        var hq by remember { mutableStateOf("") }
-//        var principal by remember { mutableStateOf("") }
-//        var champs by remember { mutableIntStateOf(0) }
-//        var active by remember { mutableStateOf(true) }
-//       AddTeamDialog(
-//            name, onNameChange = { name = it },
-//            headquarters = hq, onHqChange = { hq = it },
-//            teamPrincipal = principal, onPrincipalChange = { principal = it },
-//            championships = champs, onChampsChange = { champs = it },
-//            active = active, onActiveChange = { active = it },
-//            onDismiss = { showAdd = false },
-//            onSave = {
-//                val newId = (teams.maxOfOrNull { it.id } ?: 0) + 1
-//                viewModel.createTeam(
-//                    Team(
-//                        id = newId,
-//                        name = name,
-//                        foundedDate = "${LocalDate.now()}",
-//                        headquarters = hq,
-//                        teamPrincipal = principal,
-//                        engineManufacturer = "Unknown",
-//                        championships = champs,
-//                        active = active,
-//                        enginePowerHP = 0.0,
-//                        sponsors = emptyList(),
-//                        logoUrl = "ic_launcher_background"
-//                    )
-//                )
-//                currentIndex = viewModel.teams.value.lastIndex
-//                showAdd = false
-//            }
-//        )
-//    }
 }
 
 @Composable
@@ -195,46 +200,110 @@ fun ArtworkDisplay(
     drivers: List<Driver>,
     onPrevious: () -> Unit,
     onNext: () -> Unit,
-    onEdit: () -> Unit
+    onEdit: () -> Unit,
+    onDelete: () -> Unit,
+    onAdd: () -> Unit
 ) {
     val configuration = LocalConfiguration.current
     val isLandscape = configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
 
     val scrollModifier =
         if (isLandscape) Modifier.verticalScroll(rememberScrollState()) else Modifier
+
     Column(
         modifier = scrollModifier
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background)
-            .padding(horizontal = 20.dp, vertical = 30.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.SpaceBetween
+            .padding(horizontal = 20.dp)
     ) {
-        Spacer(modifier = Modifier.height(24.dp))
-        TeamLogo(team.logoUrl)
-        Spacer(modifier = Modifier.height(40.dp))
+        Column(
+            modifier = Modifier
+                .weight(1f)
+                .fillMaxWidth(),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Spacer(modifier = Modifier.height(24.dp))
+            TeamLogo(team.logoUrl)
+            Spacer(modifier = Modifier.height(20.dp))
 
-        Text(
-            text = team.name,
-            style = MaterialTheme.typography.headlineMedium,
-            fontWeight = FontWeight.Bold,
-            color = MaterialTheme.colorScheme.onBackground
-        )
-        Spacer(modifier = Modifier.height(16.dp))
+            Text(
+                text = team.name,
+                style = MaterialTheme.typography.headlineMedium,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onBackground
+            )
+            Spacer(modifier = Modifier.height(14.dp))
 
-        TeamInfoCard(team, driverCount)
-        Spacer(modifier = Modifier.height(16.dp))
+            TeamInfoCard(team, driverCount)
+            Spacer(modifier = Modifier.height(14.dp))
 
-        DriversRow(drivers)
-        Spacer(modifier = Modifier.height(28.dp))
+            DriversRow(drivers)
+            Spacer(modifier = Modifier.height(17.dp))
+        }
 
-        Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-            PurpleButton(text = stringResource(R.string.button_previous), onClick = onPrevious)
-            PurpleButton(text = stringResource(R.string.button_edit), onClick = onEdit)
-            PurpleButton(text = stringResource(R.string.button_next), onClick = onNext)
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = 8.dp),
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            Button(
+                onClick = onDelete,
+                shape = RoundedCornerShape(16.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.colorScheme.primaryContainer,
+                    contentColor = MaterialTheme.colorScheme.onPrimaryContainer
+                ),
+                modifier = Modifier
+                    .weight(1f)
+                    .height(48.dp)
+            ) {
+                Icon(Icons.Default.Delete, contentDescription = null)
+                Spacer(Modifier.width(4.dp))
+                Text(stringResource(R.string.button_delete))
+            }
+            Button(
+                onClick = onAdd,
+                shape = RoundedCornerShape(16.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.colorScheme.primaryContainer,
+                    contentColor = MaterialTheme.colorScheme.onPrimaryContainer
+                ),
+                modifier = Modifier
+                    .weight(1f)
+                    .height(48.dp)
+            ) {
+                Icon(Icons.Default.Add, contentDescription = null)
+                Spacer(Modifier.width(4.dp))
+                Text(stringResource(R.string.button_add))
+            }
+        }
+
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = 8.dp),
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            PurpleButton(
+                text = stringResource(R.string.button_previous),
+                onClick = onPrevious,
+                modifier = Modifier.weight(1f)
+            )
+            PurpleButton(
+                text = stringResource(R.string.button_edit),
+                onClick = onEdit,
+                modifier = Modifier.weight(1f)
+            )
+            PurpleButton(
+                text = stringResource(R.string.button_next),
+                onClick = onNext,
+                modifier = Modifier.weight(1f)
+            )
         }
     }
 }
+
 
 @Composable
 fun DriversRow(drivers: List<Driver>) {
@@ -271,7 +340,7 @@ fun DriversRow(drivers: List<Driver>) {
 fun DriverCard(driver: Driver) {
     val borderColor = try {
         Color(driver.helmetColor.toColorInt())
-    } catch (e: Exception) {
+    } catch (_: Exception) {
         MaterialTheme.colorScheme.onSurface
     }
 
@@ -377,7 +446,7 @@ fun TeamLogo(logoUrl: String) {
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .height(185.dp)
+            .height(180.dp)
             .padding(14.dp)
             .background(
                 color = MaterialTheme.colorScheme.surfaceVariant,
@@ -409,8 +478,8 @@ fun TeamInfoCard(team: Team, driverCount: Int) {
         )
     ) {
         Column(
-            modifier = Modifier.padding(20.dp),
-            verticalArrangement = Arrangement.spacedBy(10.dp),
+            modifier = Modifier.padding(22.dp, 18.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
             InfoRow(stringResource(R.string.info_hq), team.headquarters)
             InfoRow(stringResource(R.string.info_engine), team.engineManufacturer)
@@ -574,149 +643,149 @@ fun EditTeamDialog(
     )
 }
 
-//@OptIn(ExperimentalMaterial3Api::class)
-//@Composable
-//fun AddTeamDialog(
-//    name: String,
-//    onNameChange: (String) -> Unit,
-//    headquarters: String,
-//    onHqChange: (String) -> Unit,
-//    teamPrincipal: String,
-//    onPrincipalChange: (String) -> Unit,
-//    championships: Int,
-//    onChampsChange: (Int) -> Unit,
-//    active: Boolean,
-//    onActiveChange: (Boolean) -> Unit,
-//    onDismiss: () -> Unit,
-//    onSave: () -> Unit
-//) {
-//    val scrollState = rememberScrollState()
-//
-//    AlertDialog(
-//        onDismissRequest = onDismiss,
-//        title = {
-//            Text(
-//                text = stringResource(R.string.dialog_title_add_team),
-//                style = MaterialTheme.typography.titleLarge,
-//                color = MaterialTheme.colorScheme.onBackground
-//            )
-//        },
-//        text = {
-//            Column(
-//                modifier = Modifier
-//                    .fillMaxWidth()
-//                    .verticalScroll(scrollState)
-//                    .padding(8.dp)
-//            ) {
-//                OutlinedTextField(
-//                    value = name,
-//                    onValueChange = onNameChange,
-//                    label = { Text(stringResource(R.string.label_team_name)) },
-//                    colors = androidx.compose.material3.ExposedDropdownMenuDefaults.outlinedTextFieldColors(
-//                        focusedTextColor = MaterialTheme.colorScheme.onSurface,
-//                        focusedBorderColor = MaterialTheme.colorScheme.primary,
-//                        unfocusedBorderColor = MaterialTheme.colorScheme.onSurfaceVariant,
-//                        cursorColor = MaterialTheme.colorScheme.primary
-//                    ),
-//                    modifier = Modifier.fillMaxWidth()
-//                )
-//                OutlinedTextField(
-//                    value = headquarters,
-//                    onValueChange = onHqChange,
-//                    label = { Text(stringResource(R.string.label_headquarters)) },
-//                    colors = androidx.compose.material3.ExposedDropdownMenuDefaults.outlinedTextFieldColors(
-//                        focusedTextColor = MaterialTheme.colorScheme.onSurface,
-//                        focusedBorderColor = MaterialTheme.colorScheme.primary,
-//                        unfocusedBorderColor = MaterialTheme.colorScheme.onSurfaceVariant,
-//                        cursorColor = MaterialTheme.colorScheme.primary
-//                    ),
-//                    modifier = Modifier
-//                        .fillMaxWidth()
-//                        .padding(top = 8.dp)
-//                )
-//                OutlinedTextField(
-//                    value = teamPrincipal,
-//                    onValueChange = onPrincipalChange,
-//                    label = { Text(stringResource(R.string.label_team_principal)) },
-//                    colors = androidx.compose.material3.ExposedDropdownMenuDefaults.outlinedTextFieldColors(
-//                        focusedTextColor = MaterialTheme.colorScheme.onSurface,
-//                        focusedBorderColor = MaterialTheme.colorScheme.primary,
-//                        unfocusedBorderColor = MaterialTheme.colorScheme.onSurfaceVariant,
-//                        cursorColor = MaterialTheme.colorScheme.primary
-//                    ),
-//                    modifier = Modifier
-//                        .fillMaxWidth()
-//                        .padding(top = 8.dp)
-//                )
-//                OutlinedTextField(
-//                    value = championships.toString(),
-//                    onValueChange = {
-//                        val digits = it.filter { ch -> ch.isDigit() }
-//                        onChampsChange(digits.toIntOrNull() ?: 0)
-//                    },
-//                    label = { Text(stringResource(R.string.label_championships)) },
-//                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-//                    colors = androidx.compose.material3.ExposedDropdownMenuDefaults.outlinedTextFieldColors(
-//                        focusedTextColor = MaterialTheme.colorScheme.onSurface,
-//                        focusedBorderColor = MaterialTheme.colorScheme.primary,
-//                        unfocusedBorderColor = MaterialTheme.colorScheme.onSurfaceVariant,
-//                        cursorColor = MaterialTheme.colorScheme.primary
-//                    ),
-//                    modifier = Modifier
-//                        .fillMaxWidth()
-//                        .padding(top = 8.dp)
-//                )
-//                Row(
-//                    modifier = Modifier
-//                        .fillMaxWidth()
-//                        .padding(top = 8.dp)
-//                ) {
-//                    Text(
-//                        text = stringResource(R.string.label_active),
-//                        style = MaterialTheme.typography.bodyMedium,
-//                        color = MaterialTheme.colorScheme.onSurface,
-//                        modifier = Modifier.padding(end = 8.dp)
-//                    )
-//                    Switch(
-//                        checked = active,
-//                        onCheckedChange = onActiveChange,
-//                        colors = SwitchDefaults.colors(
-//                            checkedThumbColor = MaterialTheme.colorScheme.primary,
-//                            uncheckedThumbColor = MaterialTheme.colorScheme.onSurfaceVariant,
-//                            checkedTrackColor = MaterialTheme.colorScheme.primaryContainer,
-//                            uncheckedTrackColor = MaterialTheme.colorScheme.surfaceVariant
-//                        )
-//                    )
-//                }
-//            }
-//        },
-//        confirmButton = {
-//            Button(
-//                onClick = onSave,
-//                colors = androidx.compose.material3.ButtonDefaults.buttonColors(
-//                    containerColor = MaterialTheme.colorScheme.primary,
-//                    contentColor = MaterialTheme.colorScheme.onPrimary
-//                )
-//            ) {
-//                Text(
-//                    text = stringResource(R.string.button_save),
-//                    style = MaterialTheme.typography.labelLarge
-//                )
-//            }
-//        },
-//        dismissButton = {
-//            Button(
-//                onClick = onDismiss,
-//                colors = androidx.compose.material3.ButtonDefaults.buttonColors(
-//                    containerColor = MaterialTheme.colorScheme.surfaceVariant,
-//                    contentColor = MaterialTheme.colorScheme.onSurfaceVariant
-//                )
-//            ) {
-//                Text(
-//                    text = stringResource(R.string.button_cancel),
-//                    style = MaterialTheme.typography.labelLarge
-//                )
-//            }
-//        }
-//    )
-//}
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun AddTeamDialog(
+    name: String,
+    onNameChange: (String) -> Unit,
+    headquarters: String,
+    onHqChange: (String) -> Unit,
+    teamPrincipal: String,
+    onPrincipalChange: (String) -> Unit,
+    championships: Int,
+    onChampsChange: (Int) -> Unit,
+    active: Boolean,
+    onActiveChange: (Boolean) -> Unit,
+    onDismiss: () -> Unit,
+    onSave: () -> Unit
+) {
+    val scrollState = rememberScrollState()
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = {
+            Text(
+                text = stringResource(R.string.dialog_title_add_team),
+                style = MaterialTheme.typography.titleLarge,
+                color = MaterialTheme.colorScheme.onBackground
+            )
+        },
+        text = {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .verticalScroll(scrollState)
+                    .padding(8.dp)
+            ) {
+                OutlinedTextField(
+                    value = name,
+                    onValueChange = onNameChange,
+                    label = { Text(stringResource(R.string.label_team_name)) },
+                    colors = androidx.compose.material3.ExposedDropdownMenuDefaults.outlinedTextFieldColors(
+                        focusedTextColor = MaterialTheme.colorScheme.onSurface,
+                        focusedBorderColor = MaterialTheme.colorScheme.primary,
+                        unfocusedBorderColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                        cursorColor = MaterialTheme.colorScheme.primary
+                    ),
+                    modifier = Modifier.fillMaxWidth()
+                )
+                OutlinedTextField(
+                    value = headquarters,
+                    onValueChange = onHqChange,
+                    label = { Text(stringResource(R.string.label_headquarters)) },
+                    colors = androidx.compose.material3.ExposedDropdownMenuDefaults.outlinedTextFieldColors(
+                        focusedTextColor = MaterialTheme.colorScheme.onSurface,
+                        focusedBorderColor = MaterialTheme.colorScheme.primary,
+                        unfocusedBorderColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                        cursorColor = MaterialTheme.colorScheme.primary
+                    ),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 8.dp)
+                )
+                OutlinedTextField(
+                    value = teamPrincipal,
+                    onValueChange = onPrincipalChange,
+                    label = { Text(stringResource(R.string.label_team_principal)) },
+                    colors = androidx.compose.material3.ExposedDropdownMenuDefaults.outlinedTextFieldColors(
+                        focusedTextColor = MaterialTheme.colorScheme.onSurface,
+                        focusedBorderColor = MaterialTheme.colorScheme.primary,
+                        unfocusedBorderColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                        cursorColor = MaterialTheme.colorScheme.primary
+                    ),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 8.dp)
+                )
+                OutlinedTextField(
+                    value = championships.toString(),
+                    onValueChange = {
+                        val digits = it.filter { ch -> ch.isDigit() }
+                        onChampsChange(digits.toIntOrNull() ?: 0)
+                    },
+                    label = { Text(stringResource(R.string.label_championships)) },
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                    colors = androidx.compose.material3.ExposedDropdownMenuDefaults.outlinedTextFieldColors(
+                        focusedTextColor = MaterialTheme.colorScheme.onSurface,
+                        focusedBorderColor = MaterialTheme.colorScheme.primary,
+                        unfocusedBorderColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                        cursorColor = MaterialTheme.colorScheme.primary
+                    ),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 8.dp)
+                )
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 8.dp)
+                ) {
+                    Text(
+                        text = stringResource(R.string.label_active),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurface,
+                        modifier = Modifier.padding(end = 8.dp)
+                    )
+                    Switch(
+                        checked = active,
+                        onCheckedChange = onActiveChange,
+                        colors = SwitchDefaults.colors(
+                            checkedThumbColor = MaterialTheme.colorScheme.primary,
+                            uncheckedThumbColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                            checkedTrackColor = MaterialTheme.colorScheme.primaryContainer,
+                            uncheckedTrackColor = MaterialTheme.colorScheme.surfaceVariant
+                        )
+                    )
+                }
+            }
+        },
+        confirmButton = {
+            Button(
+                onClick = onSave,
+                colors = androidx.compose.material3.ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.colorScheme.primary,
+                    contentColor = MaterialTheme.colorScheme.onPrimary
+                )
+            ) {
+                Text(
+                    text = stringResource(R.string.button_save),
+                    style = MaterialTheme.typography.labelLarge
+                )
+            }
+        },
+        dismissButton = {
+            Button(
+                onClick = onDismiss,
+                colors = androidx.compose.material3.ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.colorScheme.surfaceVariant,
+                    contentColor = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            ) {
+                Text(
+                    text = stringResource(R.string.button_cancel),
+                    style = MaterialTheme.typography.labelLarge
+                )
+            }
+        }
+    )
+}
