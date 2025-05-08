@@ -29,6 +29,6 @@ fun PurpleButton(text: String, onClick: () -> Unit, modifier: Modifier = Modifie
         modifier = modifier
             .height(48.dp)
     ) {
-        Text(text = text, color = Color.White, fontSize = 14.sp)
+        Text(text = text, fontSize = 14.sp)
     }
 }
