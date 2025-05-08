@@ -26,20 +26,13 @@ class TeamViewModel : ViewModel() {
 
     fun updateTeam(updated: Team) = viewModelScope.launch {
         Log.i(TAG, "Updating team id=${updated.id} name=${updated.name}")
-        val success = F1DataProvider.teams.find { it.id == updated.id }?.apply {
-            name = updated.name
-            headquarters = updated.headquarters
-            teamPrincipal = updated.teamPrincipal
-            championships = updated.championships
-            active = updated.active
-        } != null
-        if (success) {
-            _teams.value = F1DataProvider.teams.toList()
-        } else {
-            Log.w(TAG, "Update failed: team id=${updated.id} not found")
+        val newList = F1DataProvider.teams.map { existing ->
+            if (existing.id == updated.id) updated else existing
         }
+        F1DataProvider.teams.clear()
+        F1DataProvider.teams.addAll(newList)
+        _teams.value = newList
     }
-
     fun deleteTeam(teamId: Int) = viewModelScope.launch {
         Log.i(TAG, "Deleting team id=$teamId")
         val removed = F1DataProvider.teams.removeAll { it.id == teamId }
