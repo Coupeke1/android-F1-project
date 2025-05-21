@@ -18,10 +18,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
@@ -43,7 +40,6 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -66,10 +62,10 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.core.graphics.toColorInt
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
+import com.example.groeiproject.components.InfoRow
 import com.example.groeiproject.components.PurpleButton
 import com.example.groeiproject.model.Driver
 import com.example.groeiproject.model.DriverViewModel
@@ -91,8 +87,7 @@ class MainActivity : ComponentActivity() {
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun TeamViewer(
-    viewModel: TeamViewModel,
-    navController: NavHostController
+    viewModel: TeamViewModel, navController: NavHostController
 ) {
     val teams by viewModel.teams.collectAsState()
     var currentIndex by remember { mutableIntStateOf(0) }
@@ -105,8 +100,7 @@ fun TeamViewer(
 
 
     Box(
-        Modifier
-            .fillMaxSize()
+        Modifier.fillMaxSize()
     ) {
         Column(Modifier.fillMaxSize()) {
             if (teams.isEmpty()) {
@@ -117,8 +111,7 @@ fun TeamViewer(
                     textAlign = TextAlign.Center
                 )
                 Button(
-                    onClick = { showAdd = true },
-                    modifier = Modifier.padding(top = 16.dp)
+                    onClick = { showAdd = true }, modifier = Modifier.padding(top = 16.dp)
                 ) {
                     Icon(Icons.Default.Add, contentDescription = null)
                     Spacer(Modifier.width(8.dp))
@@ -146,21 +139,16 @@ fun TeamViewer(
                             launchSingleTop = true
                             restoreState = true
                         }
-                    }
-                )
+                    })
             }
         }
 
         if (showEdit) {
             val team = teams.getOrNull(currentIndex) ?: return
-            EditTeamDialog(
-                team = team,
-                onDismiss = { showEdit = false },
-                onSave = {
-                    viewModel.updateTeam(it)
-                    showEdit = false
-                }
-            )
+            EditTeamDialog(team = team, onDismiss = { showEdit = false }, onSave = {
+                viewModel.updateTeam(it)
+                showEdit = false
+            })
         }
 
         if (showAdd) {
@@ -200,32 +188,32 @@ fun TeamViewer(
                     viewModel.createTeam(newTeam)
                     currentIndex = viewModel.teams.value.lastIndex
                     showAdd = false
-                }
-            )
+                })
         }
     }
 }
 
+@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun DriversViewer(
-    teamId: Int = -1,
-    viewModel: DriverViewModel = viewModel()
+    teamId: Int = -1, viewModel: DriverViewModel = viewModel()
 ) {
-    // collect and filter drivers
     val allDrivers by viewModel.drivers.collectAsState()
     val drivers = remember(teamId, allDrivers) {
         if (teamId < 0) allDrivers else allDrivers.filter { it.teamId == teamId }
     }
     var index by rememberSaveable { mutableIntStateOf(0) }
+    var showEdit by remember { mutableStateOf(false) }
+    var showAdd by remember { mutableStateOf(false) }
 
     val onPrevious: () -> Unit = { if (index > 0) index-- }
     val onNext: () -> Unit = { if (index < drivers.lastIndex) index++ }
-    val onEdit: () -> Unit = { /* TODO: show edit dialog */ }
     val onDelete: () -> Unit = {
         drivers.getOrNull(index)?.let { viewModel.deleteDriver(it.id) }
         index = (index - 1).coerceAtLeast(0)
     }
-    val onAdd: () -> Unit = { /* TODO: show add dialog */ }
+    val onEdit: () -> Unit = { showEdit = true }
+    val onAdd: () -> Unit = { showAdd = true }
 
     val configuration = LocalConfiguration.current
     val isLandscape = configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
@@ -245,62 +233,20 @@ fun DriversViewer(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Spacer(Modifier.height(24.dp))
-            val driver = drivers.getOrNull(index)
-            if (driver == null) {
-                Text("No drivers available", style = MaterialTheme.typography.bodyMedium)
-            } else {
-                Box(
-                    modifier = Modifier
-                        .size(120.dp)
-                        .background(
-                            color = runCatching { Color(driver.helmetColor.toColorInt()) }
-                                .getOrDefault(MaterialTheme.colorScheme.primary),
-                            shape = MaterialTheme.shapes.medium
-                        )
-                )
-                Spacer(Modifier.height(20.dp))
+
+            drivers.getOrNull(index)?.let { driver ->
+                DriverCard(driver = driver)
+            } ?: run {
                 Text(
-                    text = driver.fullName,
-                    style = MaterialTheme.typography.headlineMedium,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.onBackground
+                    text = stringResource(R.string.no_drivers_available),
+                    style = MaterialTheme.typography.bodyMedium
                 )
-                Spacer(Modifier.height(14.dp))
-                Card(
-                    modifier = Modifier
-                        .fillMaxWidth(0.8f)
-                        .padding(vertical = 8.dp),
-                    shape = MaterialTheme.shapes.medium,
-                    elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
-                ) {
-                    Column(modifier = Modifier.padding(16.dp)) {
-                        Text(
-                            "Nationality: ${driver.nationality}",
-                            style = MaterialTheme.typography.bodyMedium
-                        )
-                        Text("#${driver.raceNumber}", style = MaterialTheme.typography.bodyMedium)
-                        Text(
-                            "DOB: ${driver.dateOfBirth}",
-                            style = MaterialTheme.typography.bodyMedium
-                        )
-                        Text(
-                            "Contract: ${driver.contractYears} yrs",
-                            style = MaterialTheme.typography.bodyMedium
-                        )
-                        Text(
-                            "Podiums: ${driver.podiumFinishes}",
-                            style = MaterialTheme.typography.bodyMedium
-                        )
-                        Text(
-                            text = if (driver.isRookie) "Rookie" else "Veteran",
-                            style = MaterialTheme.typography.bodyMedium
-                        )
-                    }
-                }
             }
+
             Spacer(Modifier.height(14.dp))
         }
 
+        // delete/add row
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -308,35 +254,331 @@ fun DriversViewer(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            Button(onClick = onDelete, modifier = Modifier
-                .weight(1f)
-                .height(48.dp)) {
+            Button(
+                onClick = onDelete, modifier = Modifier
+                    .weight(1f)
+                    .height(48.dp)
+            ) {
                 Icon(Icons.Default.Delete, contentDescription = null)
                 Spacer(Modifier.width(4.dp))
-                Text("Delete")
+                Text(stringResource(R.string.button_delete))
             }
             Spacer(Modifier.width(8.dp))
-            Button(onClick = onAdd, modifier = Modifier
-                .weight(1f)
-                .height(48.dp)) {
+            Button(
+                onClick = onAdd, modifier = Modifier
+                    .weight(1f)
+                    .height(48.dp)
+            ) {
                 Icon(Icons.Default.Add, contentDescription = null)
                 Spacer(Modifier.width(4.dp))
-                Text("Add")
+                Text(stringResource(R.string.button_add))
             }
         }
 
+        // navigation row
         Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
+            modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            Button(onClick = onPrevious, modifier = Modifier.weight(1f)) { Text("Previous") }
-            Button(onClick = onEdit, modifier = Modifier.weight(1f)) { Text("Edit") }
-            Button(onClick = onNext, modifier = Modifier.weight(1f)) { Text("Next") }
+            PurpleButton(
+                text = stringResource(R.string.button_previous),
+                onClick = onPrevious,
+                modifier = Modifier.weight(1f)
+            )
+            PurpleButton(
+                text = stringResource(R.string.button_edit),
+                onClick = onEdit,
+                modifier = Modifier.weight(1f)
+            )
+            PurpleButton(
+                text = stringResource(R.string.button_next),
+                onClick = onNext,
+                modifier = Modifier.weight(1f)
+            )
         }
-        Spacer(Modifier.height(14.dp))
 
+        Spacer(Modifier.height(14.dp))
+    }
+
+    if (showEdit) {
+        drivers.getOrNull(index)?.let { driver ->
+            EditDriverDialog(driver = driver, onDismiss = { showEdit = false }, onSave = {
+                viewModel.updateDriver(it)
+                showEdit = false
+            })
+        }
+    }
+
+    if (showAdd) {
+        var fullName by rememberSaveable { mutableStateOf("") }
+        var raceNumber by rememberSaveable { mutableStateOf("") }
+        var nationality by rememberSaveable { mutableStateOf("") }
+        var dateOfBirth by rememberSaveable { mutableStateOf("") }
+        var contractYears by rememberSaveable { mutableStateOf(0) }
+        var podiumFinishes by rememberSaveable { mutableStateOf(0) }
+        var helmetColor by rememberSaveable { mutableStateOf("#FFFFFF") }
+        var isRookie by rememberSaveable { mutableStateOf(false) }
+
+        AddDriverDialog(
+            fullName = fullName,
+            onFullNameChange = { fullName = it },
+            raceNumber = raceNumber,
+            onRaceNumberChange = { raceNumber = it.filter { ch -> ch.isDigit() } },
+            nationality = nationality,
+            onNationalityChange = { nationality = it },
+            dateOfBirth = dateOfBirth,
+            onDobChange = { dateOfBirth = it },
+            contractYears = contractYears,
+            onContractChange = { contractYears = it },
+            podiumFinishes = podiumFinishes,
+            onPodiumChange = { podiumFinishes = it },
+            helmetColor = helmetColor,
+            onColorChange = { helmetColor = it },
+            isRookie = isRookie,
+            onRookieChange = { isRookie = it },
+            onDismiss = { showAdd = false },
+            onSave = {
+                val newId = (allDrivers.maxOfOrNull { it.id } ?: 0) + 1
+                viewModel.createDriver(
+                    Driver(
+                        id = newId,
+                        fullName = fullName,
+                        raceNumber = raceNumber.toIntOrNull() ?: 0,
+                        nationality = nationality,
+                        dateOfBirth = dateOfBirth,
+                        contractYears = contractYears,
+                        podiumFinishes = podiumFinishes,
+                        helmetColor = helmetColor,
+                        isRookie = isRookie,
+                        teamId = teamId
+                    )
+                )
+                showAdd = false
+                index = drivers.lastIndex
+            })
     }
 }
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun EditDriverDialog(
+    driver: Driver, onDismiss: () -> Unit, onSave: (Driver) -> Unit
+) {
+    var fullName by rememberSaveable { mutableStateOf(driver.fullName) }
+    var raceNumber by rememberSaveable { mutableStateOf(driver.raceNumber.toString()) }
+    var nationality by rememberSaveable { mutableStateOf(driver.nationality) }
+    var dateOfBirth by rememberSaveable { mutableStateOf(driver.dateOfBirth) }
+    var contractYears by rememberSaveable { mutableStateOf(driver.contractYears) }
+    var podiumFinishes by rememberSaveable { mutableStateOf(driver.podiumFinishes) }
+    var helmetColor by rememberSaveable { mutableStateOf(driver.helmetColor) }
+    var isRookie by rememberSaveable { mutableStateOf(driver.isRookie) }
+    val scrollState = rememberScrollState()
+
+    AlertDialog(onDismissRequest = onDismiss, title = {
+        Text(
+            text = stringResource(R.string.dialog_title_edit_driver),
+            style = MaterialTheme.typography.titleLarge
+        )
+    }, text = {
+        Column(
+            modifier = Modifier
+                .verticalScroll(scrollState)
+                .padding(8.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            OutlinedTextField(
+                value = fullName,
+                onValueChange = { fullName = it },
+                label = { Text(stringResource(R.string.label_full_name)) },
+                modifier = Modifier.fillMaxWidth()
+            )
+            OutlinedTextField(
+                value = raceNumber,
+                onValueChange = { raceNumber = it.filter { ch -> ch.isDigit() } },
+                label = { Text(stringResource(R.string.label_race_number)) },
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                modifier = Modifier.fillMaxWidth()
+            )
+            OutlinedTextField(
+                value = nationality,
+                onValueChange = { nationality = it },
+                label = { Text(stringResource(R.string.label_nationality)) },
+                modifier = Modifier.fillMaxWidth()
+            )
+            OutlinedTextField(
+                value = dateOfBirth,
+                onValueChange = { dateOfBirth = it },
+                label = { Text(stringResource(R.string.label_dob)) },
+                modifier = Modifier.fillMaxWidth()
+            )
+            OutlinedTextField(
+                value = contractYears.toString(),
+                onValueChange = {
+                    contractYears = it.filter { ch -> ch.isDigit() }.toIntOrNull() ?: contractYears
+                },
+                label = { Text(stringResource(R.string.label_contract_years)) },
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                modifier = Modifier.fillMaxWidth()
+            )
+            OutlinedTextField(
+                value = podiumFinishes.toString(),
+                onValueChange = {
+                    podiumFinishes =
+                        it.filter { ch -> ch.isDigit() }.toIntOrNull() ?: podiumFinishes
+                },
+                label = { Text(stringResource(R.string.label_podium_finishes)) },
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                modifier = Modifier.fillMaxWidth()
+            )
+            OutlinedTextField(
+                value = helmetColor,
+                onValueChange = { helmetColor = it },
+                label = { Text(stringResource(R.string.label_helmet_color)) },
+                modifier = Modifier.fillMaxWidth()
+            )
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = stringResource(R.string.label_rookie),
+                    modifier = Modifier.padding(end = 8.dp)
+                )
+                Switch(checked = isRookie, onCheckedChange = { isRookie = it })
+            }
+        }
+    }, confirmButton = {
+        Button(onClick = {
+            onSave(
+                driver.copy(
+                    fullName = fullName,
+                    raceNumber = raceNumber.toIntOrNull() ?: driver.raceNumber,
+                    nationality = nationality,
+                    dateOfBirth = dateOfBirth,
+                    contractYears = contractYears,
+                    podiumFinishes = podiumFinishes,
+                    helmetColor = helmetColor,
+                    isRookie = isRookie
+                )
+            )
+        }) {
+            Text(text = stringResource(R.string.button_save))
+        }
+    }, dismissButton = {
+        Button(onClick = onDismiss) {
+            Text(text = stringResource(R.string.button_cancel))
+        }
+    })
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun AddDriverDialog(
+    fullName: String,
+    onFullNameChange: (String) -> Unit,
+    raceNumber: String,
+    onRaceNumberChange: (String) -> Unit,
+    nationality: String,
+    onNationalityChange: (String) -> Unit,
+    dateOfBirth: String,
+    onDobChange: (String) -> Unit,
+    contractYears: Int,
+    onContractChange: (Int) -> Unit,
+    podiumFinishes: Int,
+    onPodiumChange: (Int) -> Unit,
+    helmetColor: String,
+    onColorChange: (String) -> Unit,
+    isRookie: Boolean,
+    onRookieChange: (Boolean) -> Unit,
+    onDismiss: () -> Unit,
+    onSave: () -> Unit
+) {
+    val scrollState = rememberScrollState()
+
+    AlertDialog(onDismissRequest = onDismiss, title = {
+        Text(
+            text = stringResource(R.string.dialog_title_add_driver),
+            style = MaterialTheme.typography.titleLarge
+        )
+    }, text = {
+        Column(
+            modifier = Modifier
+                .verticalScroll(scrollState)
+                .padding(8.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            OutlinedTextField(
+                value = fullName,
+                onValueChange = onFullNameChange,
+                label = { Text(stringResource(R.string.label_full_name)) },
+                modifier = Modifier.fillMaxWidth()
+            )
+            OutlinedTextField(
+                value = raceNumber,
+                onValueChange = onRaceNumberChange,
+                label = { Text(stringResource(R.string.label_race_number)) },
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                modifier = Modifier.fillMaxWidth()
+            )
+            OutlinedTextField(
+                value = nationality,
+                onValueChange = onNationalityChange,
+                label = { Text(stringResource(R.string.label_nationality)) },
+                modifier = Modifier.fillMaxWidth()
+            )
+            OutlinedTextField(
+                value = dateOfBirth,
+                onValueChange = onDobChange,
+                label = { Text(stringResource(R.string.label_dob)) },
+                modifier = Modifier.fillMaxWidth()
+            )
+            OutlinedTextField(
+                value = contractYears.toString(),
+                onValueChange = {
+                    onContractChange(it.filter { ch -> ch.isDigit() }.toIntOrNull() ?: 0)
+                },
+                label = { Text(stringResource(R.string.label_contract_years)) },
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                modifier = Modifier.fillMaxWidth()
+            )
+            OutlinedTextField(
+                value = podiumFinishes.toString(),
+                onValueChange = {
+                    onPodiumChange(
+                        it.filter { ch -> ch.isDigit() }.toIntOrNull() ?: 0
+                    )
+                },
+                label = { Text(stringResource(R.string.label_podium_finishes)) },
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                modifier = Modifier.fillMaxWidth()
+            )
+            OutlinedTextField(
+                value = helmetColor,
+                onValueChange = onColorChange,
+                label = { Text(stringResource(R.string.label_helmet_color)) },
+                modifier = Modifier.fillMaxWidth()
+            )
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = stringResource(R.string.label_rookie),
+                    modifier = Modifier.padding(end = 8.dp)
+                )
+                Switch(checked = isRookie, onCheckedChange = onRookieChange)
+            }
+        }
+    }, confirmButton = {
+        Button(onClick = onSave) {
+            Text(text = stringResource(R.string.button_save))
+        }
+    }, dismissButton = {
+        Button(onClick = onDismiss) {
+            Text(text = stringResource(R.string.button_cancel))
+        }
+    })
+}
+
 
 @Composable
 fun ArtworkDisplay(
@@ -392,8 +634,7 @@ fun ArtworkDisplay(
 
         ) {
             Button(
-                onClick = onDelete,
-                modifier = Modifier
+                onClick = onDelete, modifier = Modifier
                     .weight(1f)
                     .height(48.dp)
             ) {
@@ -405,8 +646,7 @@ fun ArtworkDisplay(
             Spacer(modifier = Modifier.width(8.dp))
 
             Button(
-                onClick = onAdd,
-                modifier = Modifier
+                onClick = onAdd, modifier = Modifier
                     .weight(1f)
                     .height(48.dp)
             ) {
@@ -440,53 +680,18 @@ fun ArtworkDisplay(
     }
 }
 
-
-@Composable
-fun DriversRow(drivers: List<Driver>) {
-    Column(modifier = Modifier.fillMaxWidth()) {
-        if (drivers.isEmpty()) {
-            Text(
-                text = stringResource(R.string.no_drivers),
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.SemiBold,
-                color = MaterialTheme.colorScheme.onBackground,
-                modifier = Modifier.padding(start = 8.dp, bottom = 4.dp)
-            )
-        } else {
-            Text(
-                text = stringResource(R.string.title_drivers),
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.SemiBold,
-                color = MaterialTheme.colorScheme.onBackground,
-                modifier = Modifier.padding(start = 8.dp, bottom = 4.dp)
-            )
-            LazyRow(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(18.dp, Alignment.CenterHorizontally)
-            ) {
-                items(drivers) { driver ->
-                    DriverCard(driver)
-                }
-            }
-        }
-    }
-}
-
 @Composable
 fun DriverCard(driver: Driver) {
-    val borderColor = try {
-        Color(driver.helmetColor.toColorInt())
-    } catch (_: Exception) {
-        MaterialTheme.colorScheme.onSurface
-    }
+    val borderColor =
+        runCatching { Color(driver.helmetColor.toColorInt()) }.getOrDefault(MaterialTheme.colorScheme.onSurface)
 
     Card(
         modifier = Modifier
-            .width(160.dp)
-            .height(200.dp)
-            .border(2.dp, borderColor, RoundedCornerShape(16.dp))
-            .clip(RoundedCornerShape(16.dp)),
-        elevation = CardDefaults.cardElevation(6.dp),
+            .width(240.dp)
+            .height(300.dp)
+            .border(3.dp, borderColor, RoundedCornerShape(20.dp))
+            .clip(RoundedCornerShape(20.dp)),
+        elevation = CardDefaults.cardElevation(8.dp),
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surfaceVariant,
             contentColor = MaterialTheme.colorScheme.onSurface
@@ -495,78 +700,79 @@ fun DriverCard(driver: Driver) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(12.dp),
-            verticalArrangement = Arrangement.Center,
+                .padding(16.dp),
+            verticalArrangement = Arrangement.SpaceEvenly,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Text(
                 text = driver.fullName,
-                style = MaterialTheme.typography.bodyLarge,
-                fontWeight = FontWeight.SemiBold,
-                fontSize = 15.sp,
+                style = MaterialTheme.typography.headlineSmall,
+                fontWeight = FontWeight.Bold,
                 textAlign = TextAlign.Center,
                 maxLines = 2,
-                color = MaterialTheme.colorScheme.onSurface,
                 modifier = Modifier.fillMaxWidth()
             )
+
             Spacer(modifier = Modifier.height(4.dp))
+
             Text(
                 text = "#${driver.raceNumber}",
-                style = MaterialTheme.typography.labelLarge,
+                style = MaterialTheme.typography.titleMedium,
                 textAlign = TextAlign.Center,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth(),
+                color = MaterialTheme.colorScheme.onSurfaceVariant
             )
+
             Spacer(modifier = Modifier.height(8.dp))
+
             Text(
                 text = driver.nationality,
-                style = MaterialTheme.typography.bodyMedium,
+                style = MaterialTheme.typography.bodyLarge,
                 textAlign = TextAlign.Center,
-                modifier = Modifier.fillMaxWidth(),
-                color = MaterialTheme.colorScheme.onSurface
+                modifier = Modifier.fillMaxWidth()
             )
-            Spacer(modifier = Modifier.height(4.dp))
+
             Text(
                 text = driver.dateOfBirth,
-                style = MaterialTheme.typography.bodySmall,
+                style = MaterialTheme.typography.bodyMedium,
                 textAlign = TextAlign.Center,
-                modifier = Modifier.fillMaxWidth(),
-                color = MaterialTheme.colorScheme.onSurface
+                modifier = Modifier.fillMaxWidth()
             )
+
             Text(
                 text = "${driver.contractYears} jaar contract",
-                style = MaterialTheme.typography.bodySmall,
+                style = MaterialTheme.typography.bodyMedium,
                 textAlign = TextAlign.Center,
-                modifier = Modifier.fillMaxWidth(),
-                color = MaterialTheme.colorScheme.onSurface
+                modifier = Modifier.fillMaxWidth()
             )
-            Spacer(modifier = Modifier.height(4.dp))
+
             Text(
                 text = "${driver.podiumFinishes} podia",
-                style = MaterialTheme.typography.bodySmall,
+                style = MaterialTheme.typography.bodyMedium,
                 textAlign = TextAlign.Center,
-                modifier = Modifier.fillMaxWidth(),
-                color = MaterialTheme.colorScheme.onSurface
+                modifier = Modifier.fillMaxWidth()
             )
+
             if (driver.isRookie) {
                 Spacer(modifier = Modifier.height(6.dp))
                 Surface(
-                    shape = RoundedCornerShape(8.dp),
-                    tonalElevation = 2.dp,
+                    shape = RoundedCornerShape(12.dp),
+                    tonalElevation = 4.dp,
                     color = MaterialTheme.colorScheme.primaryContainer,
                     contentColor = MaterialTheme.colorScheme.onPrimaryContainer
                 ) {
                     Text(
                         text = stringResource(R.string.badge_rookie),
-                        style = MaterialTheme.typography.labelSmall,
+                        style = MaterialTheme.typography.labelLarge,
                         fontWeight = FontWeight.Bold,
-                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+                        modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp)
                     )
                 }
             }
         }
     }
 }
+
 
 @Composable
 fun TeamLogo(logoUrl: String) {
@@ -624,19 +830,6 @@ fun TeamInfoCard(team: Team, driverCount: Int) {
                 if (team.active) stringResource(R.string.yes) else stringResource(R.string.no)
             )
         }
-    }
-}
-
-@Composable
-fun InfoRow(label: String, value: String) {
-    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-        Text(text = label, fontSize = 16.sp, color = MaterialTheme.colorScheme.onPrimary)
-        Text(
-            text = value,
-            fontSize = 16.sp,
-            fontWeight = FontWeight.Medium,
-            color = MaterialTheme.colorScheme.onPrimary
-        )
     }
 }
 

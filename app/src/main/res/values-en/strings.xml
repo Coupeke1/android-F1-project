@@ -20,6 +20,7 @@
     <string name="button_cancel">Cancel</string>
 
     <!-- TeamInfoCard / InfoRow -->
+    <string name="label_rookie">Rookie</string>
     <string name="info_hq">HQ</string>
     <string name="info_engine">Engine</string>
     <string name="info_championships">Championships</string>
@@ -38,4 +39,13 @@
     <string name="dialog_title_add_team">add a team</string>
     <string name="Teams">Teams</string>
     <string name="Drivers">Drivers</string>
+    <string name="dialog_title_edit_driver">Edit Driver</string>
+    <string name="dialog_title_add_driver">Add driver</string>
+    <string name="label_full_name">Full name</string>
+    <string name="label_race_number">Race number</string>
+    <string name="label_nationality">Nationality</string>
+    <string name="label_dob">BirthDate</string>
+    <string name="label_contract_years">ContractSpan</string>
+    <string name="label_podium_finishes">Podiums</string>
+    <string name="label_helmet_color">"Helmet color "</string>
 </resources>

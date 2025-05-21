@@ -8,6 +8,11 @@
     <!-- DriversRow -->
     <string name="title_drivers">Coureurs</string>
 
+    <!-- DriverViewer / DriverCard -->
+    <string name="no_drivers_available">Geen coureurs beschikbaar</string>
+    <string name="button_add">Toevoegen</string>
+    <string name="button_delete">Verwijderen</string>
+
     <!-- EditTeamDialog -->
     <string name="dialog_title_edit_team">Bewerk Team</string>
     <string name="label_team_name">Teamnaam</string>
@@ -17,6 +22,21 @@
     <string name="label_active">Actief</string>
     <string name="button_save">Opslaan</string>
     <string name="button_cancel">Annuleren</string>
+
+    <!-- AddTeamDialog -->
+    <string name="dialog_title_add_team">Team toevoegen</string>
+
+    <!-- Driver Dialogs -->
+    <string name="dialog_title_edit_driver">Bewerk Coureur</string>
+    <string name="dialog_title_add_driver">Coureur toevoegen</string>
+    <string name="label_full_name">Volledige naam</string>
+    <string name="label_race_number">Race nummer</string>
+    <string name="label_nationality">Nationaliteit</string>
+    <string name="label_dob">Geboortedatum</string>
+    <string name="label_contract_years">Contractduur (jaren)</string>
+    <string name="label_podium_finishes">Podia</string>
+    <string name="label_helmet_color">Helmkleur (hex)</string>
+    <string name="label_rookie">Nieuwkomer</string>
 
     <!-- TeamInfoCard / InfoRow -->
     <string name="info_hq">HQ</string>
@@ -29,15 +49,12 @@
 
     <!-- DriverCard -->
     <string name="badge_rookie">Nieuwkomer</string>
+
     <string name="yes">Ja</string>
     <string name="no">Nee</string>
-    <string name="no_drivers">Geen coureurs</string>
-    <string name="button_add">toevoegen</string>
-    <string name="button_delete">"verwijderen"</string>
-    <string name="dialog_title_add_team">team toevoegen</string>
-    <string name="Teams">Teams</string>
-    <string name="Drivers">Coureurs</string>
 
     <!-- Navigation -->
-
+    <string name="Teams">Teams</string>
+    <string name="Drivers">Coureurs</string>
+    <string name="no_drivers">Geen Coureurs</string>
 </resources>
