@@ -1,0 +1,10 @@
+{
+  "name": "mijn-json-server",
+  "version": "1.0.0",
+  "scripts": {
+    "start": "npx json-server --host 127.0.0.1 db.json"
+  },
+  "dependencies": {
+    "json-server": "0.17.4"
+  }
+}
