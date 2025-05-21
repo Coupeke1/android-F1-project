@@ -18,6 +18,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
@@ -42,6 +43,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -97,15 +99,14 @@ fun TeamViewer(
     var showEdit by remember { mutableStateOf(false) }
     var showAdd by remember { mutableStateOf(false) }
 
-    // sync selectedTeamId in VM
     LaunchedEffect(currentIndex, teams) {
         teams.getOrNull(currentIndex)?.let { viewModel.selectTeam(it.id) }
     }
 
+
     Box(
         Modifier
             .fillMaxSize()
-            .padding(10.dp)
     ) {
         Column(Modifier.fillMaxSize()) {
             if (teams.isEmpty()) {
@@ -206,75 +207,134 @@ fun TeamViewer(
 }
 
 @Composable
-fun DriversViewer(teamId: Int = -1, viewModel: DriverViewModel = viewModel()) {
+fun DriversViewer(
+    teamId: Int = -1,
+    viewModel: DriverViewModel = viewModel()
+) {
+    // collect and filter drivers
     val allDrivers by viewModel.drivers.collectAsState()
     val drivers = remember(teamId, allDrivers) {
-        if (teamId < 0) allDrivers
-        else allDrivers.filter { it.teamId == teamId }
+        if (teamId < 0) allDrivers else allDrivers.filter { it.teamId == teamId }
     }
-
     var index by rememberSaveable { mutableIntStateOf(0) }
-    var showEdit by remember { mutableStateOf(false) }
-    var showAdd by remember { mutableStateOf(false) }
 
-    Surface(Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
+    val onPrevious: () -> Unit = { if (index > 0) index-- }
+    val onNext: () -> Unit = { if (index < drivers.lastIndex) index++ }
+    val onEdit: () -> Unit = { /* TODO: show edit dialog */ }
+    val onDelete: () -> Unit = {
+        drivers.getOrNull(index)?.let { viewModel.deleteDriver(it.id) }
+        index = (index - 1).coerceAtLeast(0)
+    }
+    val onAdd: () -> Unit = { /* TODO: show add dialog */ }
+
+    val configuration = LocalConfiguration.current
+    val isLandscape = configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
+    val scrollModifier =
+        if (isLandscape) Modifier.verticalScroll(rememberScrollState()) else Modifier
+
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colorScheme.background)
+            .padding(horizontal = 20.dp)
+    ) {
         Column(
-            Modifier
-                .verticalScroll(rememberScrollState())
-                .padding(16.dp)
+            modifier = scrollModifier
+                .weight(5f)
+                .fillMaxWidth(),
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            if (drivers.isEmpty()) {
+            Spacer(Modifier.height(24.dp))
+            val driver = drivers.getOrNull(index)
+            if (driver == null) {
                 Text("No drivers available", style = MaterialTheme.typography.bodyMedium)
-                Spacer(Modifier.height(8.dp))
-                Button(onClick = { showAdd = true }) {
-                    Icon(Icons.Default.Add, contentDescription = null)
-                    Spacer(Modifier.width(4.dp))
-                    Text("Add Driver")
-                }
             } else {
-                val safeIdx = index.coerceIn(0, drivers.lastIndex)
-                val driver = drivers[safeIdx]
-
-                DriverCard(driver)
-
-                Spacer(Modifier.height(16.dp))
-                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Button(onClick = { if (safeIdx > 0) index-- }) { Text("Previous") }
-                    Button(onClick = { showEdit = true }) { Text("Edit") }
-                    Button(onClick = { if (safeIdx < drivers.lastIndex) index++ }) { Text("Next") }
-                    Button(onClick = { showAdd = true }) {
-                        Icon(
-                            Icons.Default.Add, contentDescription = null
+                Box(
+                    modifier = Modifier
+                        .size(120.dp)
+                        .background(
+                            color = runCatching { Color(driver.helmetColor.toColorInt()) }
+                                .getOrDefault(MaterialTheme.colorScheme.primary),
+                            shape = MaterialTheme.shapes.medium
+                        )
+                )
+                Spacer(Modifier.height(20.dp))
+                Text(
+                    text = driver.fullName,
+                    style = MaterialTheme.typography.headlineMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onBackground
+                )
+                Spacer(Modifier.height(14.dp))
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth(0.8f)
+                        .padding(vertical = 8.dp),
+                    shape = MaterialTheme.shapes.medium,
+                    elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+                ) {
+                    Column(modifier = Modifier.padding(16.dp)) {
+                        Text(
+                            "Nationality: ${driver.nationality}",
+                            style = MaterialTheme.typography.bodyMedium
+                        )
+                        Text("#${driver.raceNumber}", style = MaterialTheme.typography.bodyMedium)
+                        Text(
+                            "DOB: ${driver.dateOfBirth}",
+                            style = MaterialTheme.typography.bodyMedium
+                        )
+                        Text(
+                            "Contract: ${driver.contractYears} yrs",
+                            style = MaterialTheme.typography.bodyMedium
+                        )
+                        Text(
+                            "Podiums: ${driver.podiumFinishes}",
+                            style = MaterialTheme.typography.bodyMedium
+                        )
+                        Text(
+                            text = if (driver.isRookie) "Rookie" else "Veteran",
+                            style = MaterialTheme.typography.bodyMedium
                         )
                     }
-                    Button(onClick = {
-                        viewModel.deleteDriver(driver.id)
-                        index = (index - 1).coerceAtLeast(0)
-                    }) { Icon(Icons.Default.Delete, contentDescription = null) }
                 }
+            }
+            Spacer(Modifier.height(14.dp))
+        }
+
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = 8.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            Button(onClick = onDelete, modifier = Modifier
+                .weight(1f)
+                .height(48.dp)) {
+                Icon(Icons.Default.Delete, contentDescription = null)
+                Spacer(Modifier.width(4.dp))
+                Text("Delete")
+            }
+            Spacer(Modifier.width(8.dp))
+            Button(onClick = onAdd, modifier = Modifier
+                .weight(1f)
+                .height(48.dp)) {
+                Icon(Icons.Default.Add, contentDescription = null)
+                Spacer(Modifier.width(4.dp))
+                Text("Add")
             }
         }
 
-        if (showEdit) {
-//            EditDriverDialog(
-//                driver = drivers.getOrNull(index) ?: return,
-//                onDismiss = { showEdit = false },
-//                onSave = {
-//                    viewModel.updateDriver(it)
-//                    showEdit = false
-//                }
-//            )
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            Button(onClick = onPrevious, modifier = Modifier.weight(1f)) { Text("Previous") }
+            Button(onClick = onEdit, modifier = Modifier.weight(1f)) { Text("Edit") }
+            Button(onClick = onNext, modifier = Modifier.weight(1f)) { Text("Next") }
         }
+        Spacer(Modifier.height(14.dp))
 
-        if (showAdd) {
-//            AddDriverDialog(
-//                onDismiss = { showAdd = false },
-//                onSave = {
-//                    viewModel.createDriver(it)
-//                    showAdd = false
-//                }
-//            )
-        }
     }
 }
 
@@ -294,14 +354,15 @@ fun ArtworkDisplay(
     val scrollModifier =
         if (isLandscape) Modifier.verticalScroll(rememberScrollState()) else Modifier
 
+
     Column(
-        modifier = scrollModifier
+        modifier = Modifier
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background)
             .padding(horizontal = 20.dp)
     ) {
         Column(
-            modifier = Modifier
+            modifier = scrollModifier
                 .weight(5f)
                 .fillMaxWidth(),
             horizontalAlignment = Alignment.CenterHorizontally
@@ -374,6 +435,8 @@ fun ArtworkDisplay(
                 modifier = Modifier.weight(1f)
             )
         }
+        Spacer(modifier = Modifier.height(14.dp))
+
     }
 }
 
