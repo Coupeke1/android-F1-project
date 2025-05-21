@@ -187,7 +187,7 @@ object F1DataProvider {
             logoUrl = "jordan_f1_team_logo"
         )
     )
-    val drivers = listOf(
+    val drivers: MutableList<Driver> = mutableListOf(
         Driver(1, 1, "Lewis Hamilton", "British", 44, "1985-01-07", 3, 197, "Purple", false),
         Driver(1, 1, "Kimi Antonelli", "Italian", 12, "2006-03-25", 1, 2, "white", true),
         Driver(2, 1, "George Russell", "British", 63, "1998-02-15", 3, 11, "Black", false),

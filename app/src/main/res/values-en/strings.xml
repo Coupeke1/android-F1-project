@@ -36,4 +36,6 @@
     <string name="button_add">add</string>
     <string name="button_delete">delete</string>
     <string name="dialog_title_add_team">add a team</string>
+    <string name="Teams">Teams</string>
+    <string name="Drivers">Drivers</string>
 </resources>

@@ -1,4 +1,5 @@
 package com.example.groeiproject.model
+
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -7,39 +8,32 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 
-private const val TAG = "TeamViewModel"
+private const val TAG = "DriverViewModel"
 
-class TeamViewModel : ViewModel() {
-    private val _teams = MutableStateFlow<List<Team>>(F1DataProvider.teams.toList())
-    val teams: StateFlow<List<Team>> = _teams
+class DriverViewModel : ViewModel() {
+    private val _drivers = MutableStateFlow(F1DataProvider.drivers.toList())
+    val drivers: StateFlow<List<Driver>> = _drivers
 
-    fun createTeam(newTeam: Team) = viewModelScope.launch {
-        Log.i(TAG, "Creating new team: ${newTeam.name}")
-        F1DataProvider.teams.add(newTeam)
-        _teams.value = F1DataProvider.teams.toList()
+    fun createDriver(newDriver: Driver) = viewModelScope.launch {
+        Log.i(TAG, "Creating new driver: ${newDriver.fullName}")
+        F1DataProvider.drivers.add(newDriver)
+        _drivers.value = F1DataProvider.drivers.toList()
     }
 
-    fun loadTeams() = viewModelScope.launch {
-        Log.d(TAG, "Loading all teams (count=${F1DataProvider.teams.size})")
-        _teams.value = F1DataProvider.teams.toList()
+    fun updateDriver(updated: Driver) = viewModelScope.launch {
+        Log.i(TAG, "Updating driver id=${updated.id}")
+        val newList = F1DataProvider.drivers.map { if (it.id == updated.id) updated else it }
+        F1DataProvider.drivers.clear()
+        F1DataProvider.drivers.addAll(newList)
+        _drivers.value = newList
     }
 
-    fun updateTeam(updated: Team) = viewModelScope.launch {
-        Log.i(TAG, "Updating team id=${updated.id} name=${updated.name}")
-        val newList = F1DataProvider.teams.map { existing ->
-            if (existing.id == updated.id) updated else existing
-        }
-        F1DataProvider.teams.clear()
-        F1DataProvider.teams.addAll(newList)
-        _teams.value = newList
-    }
-    fun deleteTeam(teamId: Int) = viewModelScope.launch {
-        Log.i(TAG, "Deleting team id=$teamId")
-        val removed = F1DataProvider.teams.removeAll { it.id == teamId }
-        if (removed) {
-            _teams.value = F1DataProvider.teams.toList()
+    fun deleteDriver(driverId: Int) = viewModelScope.launch {
+        Log.i(TAG, "Deleting driver id=$driverId")
+        if (F1DataProvider.drivers.removeAll { it.id == driverId }) {
+            _drivers.value = F1DataProvider.drivers.toList()
         } else {
-            Log.w(TAG, "Delete failed: team id=$teamId not found")
+            Log.w(TAG, "Driver not found: $driverId")
         }
     }
 }

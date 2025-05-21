@@ -35,4 +35,9 @@
     <string name="button_add">toevoegen</string>
     <string name="button_delete">"verwijderen"</string>
     <string name="dialog_title_add_team">team toevoegen</string>
+    <string name="Teams">Teams</string>
+    <string name="Drivers">Coureurs</string>
+
+    <!-- Navigation -->
+
 </resources>
