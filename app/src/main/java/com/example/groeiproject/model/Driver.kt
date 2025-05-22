@@ -1,5 +1,8 @@
 package com.example.groeiproject.model
 
+import kotlinx.serialization.Serializable
+
+@Serializable
 data class Driver(
     val id: Int,
     val teamId: Int,

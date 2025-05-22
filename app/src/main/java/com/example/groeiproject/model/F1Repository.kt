@@ -1,38 +1,20 @@
-import com.example.groeiproject.data.F1DataProvider
+package com.example.groeiproject.data
+
+import com.example.groeiproject.api.ApiClient
 import com.example.groeiproject.model.Driver
 import com.example.groeiproject.model.Team
 
-fun getAllTeams(): List<Team> {
-    return F1DataProvider.teams.toList()
-}
+class F1Repository {
+    private val service = ApiClient.teamService
 
-fun getAllDrivers(): List<Driver> {
-    return F1DataProvider.drivers.toList()
-}
+    suspend fun getAllTeams(): List<Team> = service.getAllTeams()
+    suspend fun getAllDrivers(): List<Driver> = service.getAllDrivers()
+    suspend fun getDriversForTeam(teamId: Int): List<Driver> = service.getDriversForTeam(teamId)
+    suspend fun createTeam(team: Team): Team = service.createTeam(team)
+    suspend fun updateTeam(team: Team): Team = service.updateTeam(team.id, team)
+    suspend fun deleteTeam(teamId: Int) = service.deleteTeam(teamId)
 
-fun countDriversForTeam(teamId: Int): Int {
-    return F1DataProvider.drivers.count { it.teamId == teamId }
-}
-
-fun getDriversForTeam(teamId: Int): List<Driver> {
-    return F1DataProvider.drivers.filter { it.teamId == teamId }
-}
-
-fun updateTeam(
-    teamId: Int,
-    newName: String? = null,
-    newHeadquarters: String? = null,
-    newTeamPrincipal: String? = null,
-    newChampionships: Int? = null,
-    newActive: Boolean? = null
-): Boolean {
-    val team = F1DataProvider.teams.find { it.id == teamId } ?: return false
-
-    newName?.let { team.name = it }
-    newHeadquarters?.let { team.headquarters = it }
-    newTeamPrincipal?.let { team.teamPrincipal = it }
-    newChampionships?.let { team.championships = it }
-    newActive?.let { team.active = it }
-
-    return true
+    suspend fun createDriver(driver: Driver): Driver = service.createDriver(driver)
+    suspend fun updateDriver(driver: Driver): Driver = service.updateDriver(driver.id, driver)
+    suspend fun deleteDriver(driverId: Int) = service.deleteDriver(driverId)
 }

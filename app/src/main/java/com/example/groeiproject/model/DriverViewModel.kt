@@ -3,7 +3,7 @@ package com.example.groeiproject.model
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.groeiproject.data.F1DataProvider
+import com.example.groeiproject.data.F1Repository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
@@ -11,29 +11,54 @@ import kotlinx.coroutines.launch
 private const val TAG = "DriverViewModel"
 
 class DriverViewModel : ViewModel() {
-    private val _drivers = MutableStateFlow(F1DataProvider.drivers.toList())
+    private val repo = F1Repository()
+
+    private val _drivers = MutableStateFlow<List<Driver>>(emptyList())
     val drivers: StateFlow<List<Driver>> = _drivers
 
+    init {
+        loadDrivers()
+    }
+
+    private fun loadDrivers() = viewModelScope.launch {
+        try {
+            Log.d(TAG, "Loading drivers from server")
+            _drivers.value = repo.getAllDrivers()
+        } catch (e: Exception) {
+            Log.e(TAG, "Failed to load drivers", e)
+        }
+    }
+
     fun createDriver(newDriver: Driver) = viewModelScope.launch {
-        Log.i(TAG, "Creating new driver: ${newDriver.fullName}")
-        F1DataProvider.drivers.add(newDriver)
-        _drivers.value = F1DataProvider.drivers.toList()
+        try {
+            Log.i(TAG, "Creating new driver: ${newDriver.fullName}")
+            val created = repo.createDriver(newDriver)
+            // Voeg nieuw object toe aan de huidige lijst
+            _drivers.value = _drivers.value + created
+        } catch (e: Exception) {
+            Log.e(TAG, "Create driver failed", e)
+        }
     }
 
     fun updateDriver(updated: Driver) = viewModelScope.launch {
-        Log.i(TAG, "Updating driver id=${updated.id}")
-        val newList = F1DataProvider.drivers.map { if (it.id == updated.id) updated else it }
-        F1DataProvider.drivers.clear()
-        F1DataProvider.drivers.addAll(newList)
-        _drivers.value = newList
+        try {
+            Log.i(TAG, "Updating driver id=${updated.id}")
+            val driver = repo.updateDriver(updated)
+            _drivers.value = _drivers.value.map {
+                if (it.id == driver.id) driver else it
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "Update driver failed", e)
+        }
     }
 
     fun deleteDriver(driverId: Int) = viewModelScope.launch {
-        Log.i(TAG, "Deleting driver id=$driverId")
-        if (F1DataProvider.drivers.removeAll { it.id == driverId }) {
-            _drivers.value = F1DataProvider.drivers.toList()
-        } else {
-            Log.w(TAG, "Driver not found: $driverId")
+        try {
+            Log.i(TAG, "Deleting driver id=$driverId")
+            repo.deleteDriver(driverId)
+            _drivers.value = _drivers.value.filterNot { it.id == driverId }
+        } catch (e: Exception) {
+            Log.e(TAG, "Delete driver failed", e)
         }
     }
 }

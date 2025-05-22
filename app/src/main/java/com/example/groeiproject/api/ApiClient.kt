@@ -14,10 +14,11 @@ object ApiClient {
         coerceInputValues = true
     }
 
-    val retrofit: Retrofit = Retrofit.Builder()
-        .baseUrl(BASE_URL)
-        .addConverterFactory(
+    val retrofit: Retrofit = Retrofit.Builder().baseUrl(BASE_URL).addConverterFactory(
             json.asConverterFactory("application/json".toMediaType())
-        )
-        .build()
+    ).build()
+    val teamService: TeamApiService by lazy {
+        retrofit.create(TeamApiService::class.java)
+    }
 }
+

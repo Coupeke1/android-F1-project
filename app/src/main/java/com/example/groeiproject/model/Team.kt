@@ -1,5 +1,9 @@
 package com.example.groeiproject.model
 
+import kotlinx.serialization.Serializable
+
+
+@Serializable
 data class Team(
     val id: Int,
     var name: String,

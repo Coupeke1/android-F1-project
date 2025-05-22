@@ -68,8 +68,7 @@ fun Router() {
                             onClick = {
                                 navController.navigate(tab.route) {
                                     launchSingleTop = true
-                                    popUpTo(navController.graph.startDestinationId) {
-                                    }
+                                    popUpTo(navController.graph.startDestinationId) {}
                                 }
                             })
                     }

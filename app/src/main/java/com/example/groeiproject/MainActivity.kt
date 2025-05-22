@@ -6,7 +6,6 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.annotation.RequiresApi
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
@@ -65,13 +64,15 @@ import androidx.compose.ui.unit.dp
 import androidx.core.graphics.toColorInt
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
+import coil.compose.AsyncImage
+import coil.request.ImageRequest
+
 import com.example.groeiproject.components.InfoRow
 import com.example.groeiproject.components.PurpleButton
 import com.example.groeiproject.model.Driver
 import com.example.groeiproject.model.DriverViewModel
 import com.example.groeiproject.model.Team
 import com.example.groeiproject.model.TeamViewModel
-import countDriversForTeam
 import java.time.LocalDate
 
 class MainActivity : ComponentActivity() {
@@ -90,6 +91,8 @@ fun TeamViewer(
     viewModel: TeamViewModel, navController: NavHostController
 ) {
     val teams by viewModel.teams.collectAsState()
+    val drivers by viewModel.drivers.collectAsState()
+
     var currentIndex by remember { mutableIntStateOf(0) }
     var showEdit by remember { mutableStateOf(false) }
     var showAdd by remember { mutableStateOf(false) }
@@ -120,8 +123,9 @@ fun TeamViewer(
             } else {
                 val idx = currentIndex.coerceIn(0, teams.lastIndex)
                 val team = teams[idx]
-                val count = remember(team.id) { countDriversForTeam(team.id) }
-
+                val count = remember(drivers, team.id) {
+                    drivers.count { it.teamId == team.id }
+                }
                 ArtworkDisplay(
                     team = team,
                     driverCount = count,
@@ -436,8 +440,7 @@ fun EditDriverDialog(
                 modifier = Modifier.fillMaxWidth()
             )
             Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically
+                modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
                     text = stringResource(R.string.label_rookie),
@@ -558,8 +561,7 @@ fun AddDriverDialog(
                 modifier = Modifier.fillMaxWidth()
             )
             Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically
+                modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
                     text = stringResource(R.string.label_rookie),
@@ -776,13 +778,6 @@ fun DriverCard(driver: Driver) {
 
 @Composable
 fun TeamLogo(logoUrl: String) {
-    val context = LocalContext.current
-    val resId = remember(logoUrl) {
-        context.resources.getIdentifier(
-            logoUrl, "drawable", context.packageName
-        )
-    }
-    val actualResId = if (resId != 0) resId else R.drawable.ic_launcher_background
     Box(
         modifier = Modifier
             .fillMaxWidth()
@@ -792,15 +787,18 @@ fun TeamLogo(logoUrl: String) {
                 color = MaterialTheme.colorScheme.surfaceVariant, shape = RoundedCornerShape(16.dp)
             )
     ) {
-        Image(
-            painter = painterResource(id = actualResId),
+        AsyncImage(
+            model = ImageRequest.Builder(context = LocalContext.current).data(logoUrl)
+                .crossfade(true).build(),
             contentDescription = stringResource(R.string.team_logo_description),
             modifier = Modifier
                 .fillMaxWidth()
                 .height(175.dp)
                 .padding(10.dp)
                 .clip(RoundedCornerShape(16.dp)),
-            contentScale = ContentScale.Fit
+            contentScale = ContentScale.Fit,
+            placeholder = painterResource(R.drawable.loading_img),
+            error = painterResource(R.drawable.ic_broken_image)
         )
     }
 }
