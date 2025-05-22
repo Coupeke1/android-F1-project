@@ -317,7 +317,7 @@ fun DriversViewer(
         var raceNumber by rememberSaveable { mutableStateOf("") }
         var nationality by rememberSaveable { mutableStateOf("") }
         var dateOfBirth by rememberSaveable { mutableStateOf("") }
-        var contractYears by rememberSaveable { mutableStateOf(0) }
+        var contractYears by rememberSaveable { mutableIntStateOf(0) }
         var podiumFinishes by rememberSaveable { mutableStateOf(0) }
         var helmetColor by rememberSaveable { mutableStateOf("#FFFFFF") }
         var isRookie by rememberSaveable { mutableStateOf(false) }
