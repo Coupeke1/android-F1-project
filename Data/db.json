@@ -241,22 +241,33 @@
         "Buzzin Hornets"
       ],
       "logoUrl": "https://i.ibb.co/1t3jRF9H/jordan-gp-seeklogo.png"
-    },
-    {
-      "id": 16,
-      "name": "fziojojgoizejg",
-      "foundedDate": "2025-05-22",
-      "headquarters": "fegzojeroigjergiopzjepiog\t",
-      "teamPrincipal": "kaj\t",
-      "engineManufacturer": "Unknown",
-      "championships": 200,
-      "active": true,
-      "enginePowerHP": 0,
-      "sponsors": [],
-      "logoUrl": "ic_launcher_background"
     }
   ],
   "drivers": [
+    {
+      "id": 1,
+      "teamId": 1,
+      "fullName": "Lewis Hamilton",
+      "nationality": "British",
+      "raceNumber": 44,
+      "dateOfBirth": "1985-01-07",
+      "contractYears": 2,
+      "podiumFinishes": 197,
+      "helmetColor": "Purple",
+      "isRookie": false
+    },
+    {
+      "id": 2,
+      "teamId": 1,
+      "fullName": "George Russell",
+      "nationality": "British",
+      "raceNumber": 63,
+      "dateOfBirth": "1998-02-15",
+      "contractYears": 3,
+      "podiumFinishes": 11,
+      "helmetColor": "Black",
+      "isRookie": false
+    },
     {
       "id": 3,
       "teamId": 2,
@@ -339,18 +350,6 @@
       "contractYears": 2,
       "podiumFinishes": 3,
       "helmetColor": "White",
-      "isRookie": false
-    },
-    {
-      "id": 11,
-      "teamId": 2,
-      "fullName": "Kaj botty",
-      "nationality": "Balzak",
-      "raceNumber": 69,
-      "dateOfBirth": "03/08/2005",
-      "contractYears": 25,
-      "podiumFinishes": 69,
-      "helmetColor": "#FE8019",
       "isRookie": false
     }
   ]

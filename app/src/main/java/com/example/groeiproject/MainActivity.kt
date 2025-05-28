@@ -62,19 +62,20 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.core.graphics.toColorInt
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
-
 import com.example.groeiproject.components.InfoRow
 import com.example.groeiproject.components.PurpleButton
 import com.example.groeiproject.model.Driver
 import com.example.groeiproject.model.DriverViewModel
 import com.example.groeiproject.model.Team
 import com.example.groeiproject.model.TeamViewModel
+import dagger.hilt.android.AndroidEntryPoint
 import java.time.LocalDate
 
+@AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -200,7 +201,7 @@ fun TeamViewer(
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun DriversViewer(
-    teamId: Int = -1, viewModel: DriverViewModel = viewModel()
+    teamId: Int = -1, viewModel: DriverViewModel = hiltViewModel()
 ) {
     val allDrivers by viewModel.drivers.collectAsState()
     val drivers = remember(teamId, allDrivers) {
@@ -318,7 +319,7 @@ fun DriversViewer(
         var nationality by rememberSaveable { mutableStateOf("") }
         var dateOfBirth by rememberSaveable { mutableStateOf("") }
         var contractYears by rememberSaveable { mutableIntStateOf(0) }
-        var podiumFinishes by rememberSaveable { mutableStateOf(0) }
+        var podiumFinishes by rememberSaveable { mutableIntStateOf(0) }
         var helmetColor by rememberSaveable { mutableStateOf("#FFFFFF") }
         var isRookie by rememberSaveable { mutableStateOf(false) }
 

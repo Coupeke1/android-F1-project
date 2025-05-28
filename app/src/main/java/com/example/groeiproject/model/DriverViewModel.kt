@@ -3,15 +3,18 @@ package com.example.groeiproject.model
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.groeiproject.data.F1Repository
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
 private const val TAG = "DriverViewModel"
 
-class DriverViewModel : ViewModel() {
-    private val repo = F1Repository()
+@HiltViewModel
+class DriverViewModel @Inject constructor(
+    private val repo: F1Repository
+) : ViewModel() {
 
     private val _drivers = MutableStateFlow<List<Driver>>(emptyList())
     val drivers: StateFlow<List<Driver>> = _drivers

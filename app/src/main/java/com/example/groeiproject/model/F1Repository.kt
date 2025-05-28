@@ -1,11 +1,13 @@
-package com.example.groeiproject.data
+package com.example.groeiproject.model
 
-import com.example.groeiproject.api.ApiClient
-import com.example.groeiproject.model.Driver
-import com.example.groeiproject.model.Team
+import com.example.groeiproject.api.TeamApiService
+import javax.inject.Inject
+import javax.inject.Singleton
 
-class F1Repository {
-    private val service = ApiClient.teamService
+@Singleton
+class F1Repository @Inject constructor(
+    private val service: TeamApiService
+) {
 
     suspend fun getAllTeams(): List<Team> = service.getAllTeams()
     suspend fun getAllDrivers(): List<Driver> = service.getAllDrivers()

@@ -7,6 +7,9 @@ plugins {
     alias(libs.plugins.dagger.hilt)
 }
 
+hilt {
+    enableAggregatingTask = false
+}
 android {
     namespace = "com.example.groeiproject"
     compileSdk = 35
