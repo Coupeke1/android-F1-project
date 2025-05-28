@@ -281,6 +281,19 @@
       "isRookie": false
     },
     {
+      "id": 4,
+      "teamId": 2,
+      "fullName": "Carlos Sainz Jr.",
+      "nationality": "Spanish",
+      "raceNumber": 55,
+      "dateOfBirth": "1994-09-01",
+      "contractYears": 2,
+      "podiumFinishes": 21,
+      "helmetColor": "Yellow",
+      "isRookie": false
+    },
+
+    {
       "id": 5,
       "teamId": 3,
       "fullName": "Max Verstappen",

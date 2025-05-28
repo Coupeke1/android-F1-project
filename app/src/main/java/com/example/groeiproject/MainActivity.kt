@@ -1,5 +1,6 @@
 package com.example.groeiproject
 
+import android.content.pm.ActivityInfo
 import android.content.res.Configuration
 import android.os.Build
 import android.os.Bundle
@@ -41,6 +42,7 @@ import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -72,6 +74,7 @@ import com.example.groeiproject.model.Driver
 import com.example.groeiproject.model.DriverViewModel
 import com.example.groeiproject.model.Team
 import com.example.groeiproject.model.TeamViewModel
+import com.example.groeiproject.ui.settings.SettingsViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import java.time.LocalDate
 
@@ -81,6 +84,18 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
+            val settingsViewModel: SettingsViewModel = hiltViewModel()
+
+            val autoLandscape by settingsViewModel.autoLandscape.collectAsState(initial = false)
+
+            SideEffect {
+                requestedOrientation = if (autoLandscape) {
+                    ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
+                } else {
+                    ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
+                }
+            }
+
             Router()
         }
     }
@@ -222,8 +237,13 @@ fun DriversViewer(
 
     val configuration = LocalConfiguration.current
     val isLandscape = configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
+
+    val settingsViewModel: SettingsViewModel = hiltViewModel()
+    val autoLandscape by settingsViewModel.autoLandscape.collectAsState(initial = false)
+
     val scrollModifier =
-        if (isLandscape) Modifier.verticalScroll(rememberScrollState()) else Modifier
+        if (isLandscape && autoLandscape) Modifier.verticalScroll(rememberScrollState())
+        else Modifier
 
     Column(
         modifier = Modifier
@@ -251,7 +271,6 @@ fun DriversViewer(
             Spacer(Modifier.height(14.dp))
         }
 
-        // delete/add row
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -280,7 +299,6 @@ fun DriversViewer(
             }
         }
 
-        // navigation row
         Row(
             modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
@@ -372,8 +390,8 @@ fun EditDriverDialog(
     var raceNumber by rememberSaveable { mutableStateOf(driver.raceNumber.toString()) }
     var nationality by rememberSaveable { mutableStateOf(driver.nationality) }
     var dateOfBirth by rememberSaveable { mutableStateOf(driver.dateOfBirth) }
-    var contractYears by rememberSaveable { mutableStateOf(driver.contractYears) }
-    var podiumFinishes by rememberSaveable { mutableStateOf(driver.podiumFinishes) }
+    var contractYears by rememberSaveable { mutableIntStateOf(driver.contractYears) }
+    var podiumFinishes by rememberSaveable { mutableIntStateOf(driver.podiumFinishes) }
     var helmetColor by rememberSaveable { mutableStateOf(driver.helmetColor) }
     var isRookie by rememberSaveable { mutableStateOf(driver.isRookie) }
     val scrollState = rememberScrollState()
@@ -596,8 +614,12 @@ fun ArtworkDisplay(
 ) {
     val configuration = LocalConfiguration.current
     val isLandscape = configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
+    val settingsViewModel: SettingsViewModel = hiltViewModel()
+    val autoLandscape by settingsViewModel.autoLandscape.collectAsState(initial = false)
+
     val scrollModifier =
-        if (isLandscape) Modifier.verticalScroll(rememberScrollState()) else Modifier
+        if (isLandscape && autoLandscape) Modifier.verticalScroll(rememberScrollState())
+        else Modifier
 
 
     Column(
@@ -823,6 +845,7 @@ fun TeamInfoCard(team: Team, driverCount: Int) {
             InfoRow(stringResource(R.string.info_engine), team.engineManufacturer)
             InfoRow(stringResource(R.string.info_championships), team.championships.toString())
             InfoRow(stringResource(R.string.info_team_principal), team.teamPrincipal)
+            InfoRow(stringResource(R.string.sponsors), team.sponsors.toString())
             InfoRow(stringResource(R.string.info_driver_count), driverCount.toString())
             InfoRow(
                 stringResource(R.string.info_active),

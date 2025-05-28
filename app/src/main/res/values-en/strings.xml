@@ -48,4 +48,5 @@
     <string name="label_contract_years">ContractSpan</string>
     <string name="label_podium_finishes">Podiums</string>
     <string name="label_helmet_color">"Helmet color "</string>
+    <string name="sponsors">Sponsors\n</string>
 </resources>

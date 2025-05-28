@@ -57,4 +57,5 @@
     <string name="Teams">Teams</string>
     <string name="Drivers">Coureurs</string>
     <string name="no_drivers">Geen Coureurs</string>
+    <string name="sponsors">Sponsors\n</string>
 </resources>
