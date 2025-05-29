@@ -12,6 +12,8 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -62,6 +64,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.core.graphics.toColorInt
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -826,8 +829,15 @@ fun TeamLogo(logoUrl: String) {
     }
 }
 
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
-fun TeamInfoCard(team: Team, driverCount: Int) {
+fun TeamInfoCard(
+    team: Team,
+    driverCount: Int,
+    settingsViewModel: SettingsViewModel = hiltViewModel()
+) {
+    val showSponsors by settingsViewModel.showSponsors.collectAsState(initial = true)
+
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(16.dp),
@@ -845,7 +855,33 @@ fun TeamInfoCard(team: Team, driverCount: Int) {
             InfoRow(stringResource(R.string.info_engine), team.engineManufacturer)
             InfoRow(stringResource(R.string.info_championships), team.championships.toString())
             InfoRow(stringResource(R.string.info_team_principal), team.teamPrincipal)
-            InfoRow(stringResource(R.string.sponsors), team.sponsors.toString())
+
+            if (showSponsors && team.sponsors.isNotEmpty()) {
+                Text(
+                    text = stringResource(R.string.sponsors),
+                    style = MaterialTheme.typography.labelMedium,
+                )
+                FlowRow(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    team.sponsors.forEach { sponsor ->
+                        Text(
+                            text = sponsor,
+                            style = MaterialTheme.typography.bodySmall,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                            modifier = Modifier
+                                .background(
+                                    color = MaterialTheme.colorScheme.onTertiaryContainer.copy(alpha = 0.1f),
+                                    shape = RoundedCornerShape(8.dp)
+                                )
+                                .padding(horizontal = 8.dp, vertical = 4.dp)
+                        )
+                    }
+                }
+            }
+
             InfoRow(stringResource(R.string.info_driver_count), driverCount.toString())
             InfoRow(
                 stringResource(R.string.info_active),
@@ -854,6 +890,7 @@ fun TeamInfoCard(team: Team, driverCount: Int) {
         }
     }
 }
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
