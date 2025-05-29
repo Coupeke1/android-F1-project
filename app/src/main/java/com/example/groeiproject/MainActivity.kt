@@ -860,6 +860,7 @@ fun TeamInfoCard(
                 Text(
                     text = stringResource(R.string.sponsors),
                     style = MaterialTheme.typography.labelMedium,
+                    color = MaterialTheme.colorScheme.onSecondaryContainer
                 )
                 FlowRow(
                     modifier = Modifier.fillMaxWidth(),
@@ -869,6 +870,7 @@ fun TeamInfoCard(
                         Text(
                             text = sponsor,
                             style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSecondaryContainer,
                             maxLines = 1,
                             overflow = TextOverflow.Ellipsis,
                             modifier = Modifier
